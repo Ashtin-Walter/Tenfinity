@@ -1,70 +1,58 @@
-# Getting Started with Create React App
+# Tenfinity
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Overview
+Tenfinity is a web-based game inspired by the classic 1010! puzzle game. Players drop various shapes onto a 10x10 grid, aiming to create complete rows and columns to score points. This project is built using React, showcasing drag-and-drop functionality, dynamic state management, and a responsive UI.
 
-## Available Scripts
+## Features
+- **Drag and Drop Mechanics**: Players can drag shapes and drop them onto the grid.
+- **Score Tracking**: The game tracks the player's score based on completed lines.
+- **Game Over State**: The game ends when no more shapes can be placed.
+- **Responsive Design**: The interface adapts to various screen sizes.
 
-In the project directory, you can run:
+## Technologies Used
+- **React**: For building the user interface.
+- **CSS**: For styling the application.
+- **PropTypes**: For type checking props in React components.
 
-### `npm start`
+## Installation
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/AshtinJW-Dev/tenfinity.git
+   cd tenfinity
+   ```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+2. **Install Dependencies**
+   ```bash
+   npm install
+   ```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+3. **Run the Application**
+   ```bash
+   npm start
+   ```
+   Open your browser and navigate to `http://localhost:3000`.
 
-### `npm test`
+## Usage
+- **Drag Shapes**: Click and drag the shapes displayed to drop them onto the grid.
+- **Score Points**: Complete rows or columns to score points.
+- **Restart Game**: Click the "Restart Game" button to reset the grid and score.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Components
+- **App**: Main application component that holds the game logic.
+- **GridBoard**: Displays the 10x10 grid and handles drop events.
+- **GridCell**: Represents individual cells in the grid.
+- **Shape**: Displays the shapes that can be dragged onto the grid.
+- **NextShapes**: Shows the upcoming shapes to be placed.
+- **ScoreBoard**: Displays the current score.
+- **GameOver**: Displays when the game is over with an option to restart.
 
-### `npm run build`
+## Contributing
+Contributions are welcome! If you have suggestions or improvements, please open an issue or submit a pull request.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Acknowledgments
+- Inspired by the 1010! puzzle game.
+- Special thanks to the React community for resources and support.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
