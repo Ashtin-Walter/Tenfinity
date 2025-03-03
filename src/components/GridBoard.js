@@ -1,14 +1,14 @@
-import React from "react";
+import React, { useCallback } from "react";
 import GridCell from "./GridCell";
 import PropTypes from "prop-types";
 
-const GridBoard = ({ grid, onDrop }) => {
-  const handleDragOver = (e) => {
+const GridBoard = ({ grid, onDrop, onDragOver }) => {
+  const handleDragOver = useCallback((e) => {
     e.preventDefault(); // Prevent default to allow drop
     console.log("Drag over a cell");
-  };
+  }, []);
 
-  const handleDrop = (e, rowIndex, cellIndex) => {
+  const handleDrop = useCallback((e, rowIndex, cellIndex) => {
     e.preventDefault();
     const shapeData = e.dataTransfer.getData("shape");
     const shape = shapeData ? JSON.parse(shapeData) : null;
@@ -20,7 +20,7 @@ const GridBoard = ({ grid, onDrop }) => {
     } else {
       console.error("Shape data not found in dataTransfer.");
     }
-  };
+  }, [onDrop]);
 
   return (
     <div className="grid-board">
@@ -43,6 +43,7 @@ const GridBoard = ({ grid, onDrop }) => {
 GridBoard.propTypes = {
   grid: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.bool)).isRequired,
   onDrop: PropTypes.func.isRequired,
+  onDragOver: PropTypes.func.isRequired,
 };
 
 export default GridBoard;

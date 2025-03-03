@@ -1,7 +1,12 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
-const ScoreBoard = React.memo(({ score }) => {
+const ScoreBoard = ({ score }) => {
   return <div className="score-board">Score: {score}</div>;
-});
+};
 
-export default ScoreBoard;
+ScoreBoard.propTypes = {
+  score: PropTypes.number.isRequired,
+};
+
+export default React.memo(ScoreBoard);

@@ -6,7 +6,39 @@ import ScoreBoard from './components/ScoreBoard';
 import { getRandomShape } from './utils/shapeGenerator';
 import './App.css';
 
+// Utility function to generate an empty grid
 const generateEmptyGrid = () => Array(10).fill().map(() => Array(10).fill(false));
+
+// Utility function to check for completed lines
+const checkForCompletedLines = (grid, setScore) => {
+  let linesCleared = 0;
+
+  // Check for completed rows
+  grid.forEach(row => {
+    if (row.every(cell => cell)) {
+      linesCleared++;
+    }
+  });
+
+  // Check for completed columns
+  for (let col = 0; col < 10; col++) {
+    let columnComplete = true;
+    for (let row = 0; row < 10; row++) {
+      if (!grid[row][col]) {
+        columnComplete = false;
+        break;
+      }
+    }
+    if (columnComplete) {
+      linesCleared++;
+    }
+  }
+
+  // Update the score if any lines were cleared
+  if (linesCleared > 0) {
+    setScore(prevScore => prevScore + linesCleared);
+  }
+};
 
 const App = () => {
   const [grid, setGrid] = useState(generateEmptyGrid());
@@ -17,79 +49,46 @@ const App = () => {
 
   // Logic for placing a shape on the grid
   const placeShapeOnGrid = (shape, startX, startY) => {
-    // Make a deep copy of the grid to prevent direct mutation
     const newGrid = grid.map(row => [...row]);
-  
-    // Check the bounds before placing the shape
+
     for (let y = 0; y < shape.length; y++) {
       for (let x = 0; x < shape[y].length; x++) {
         if (shape[y][x]) {
           const gridY = startY + y;
           const gridX = startX + x;
-  
-          // Ensure we're within grid bounds
-          if (gridY >= 0 && gridY < 10 && gridX >= 0 && gridX < 10) {
+
+          if (gridY >= 0 && gridY < 10 && gridX >= 0 && gridX < 10 && !newGrid[gridY][gridX]) {
             newGrid[gridY][gridX] = true;
           } else {
-            console.warn(`Shape part out of bounds at [${gridY}, ${gridX}]`);
+            console.warn(`Shape part out of bounds or cell already filled at [${gridY}, ${gridX}]`);
+            return;
           }
         }
       }
     }
-  
-    // Update the grid state
+
     setGrid(newGrid);
     console.log("Updated Grid:", newGrid);
-  
-    // Move to the next shape
-    setCurrentShapeIndex((prevIndex) => (prevIndex + 1) % 3);
-    
-    // When the shape queue is depleted, generate new shapes
+
+    setCurrentShapeIndex(prevIndex => (prevIndex + 1) % 3);
+
     if (currentShapeIndex === 2) {
       setShapes([getRandomShape(), getRandomShape(), getRandomShape()]);
     }
-  
-    // Check for completed lines after placing the shape
-    checkForCompletedLines(newGrid);
-  };
 
-  // Logic for checking completed lines
-  const checkForCompletedLines = (grid) => {
-    let linesCleared = 0;
-    grid.forEach(row => {
-      if (row.every(cell => cell)) {
-        linesCleared++;
-      }
-    });
-    for (let col = 0; col < 10; col++) {
-      let columnComplete = true;
-      for (let row = 0; row < 10; row++) {
-        if (!grid[row][col]) {
-          columnComplete = false;
-          break;
-        }
-      }
-      if (columnComplete) {
-        linesCleared++;
-      }
-    }
-    if (linesCleared > 0) {
-      setScore(score + linesCleared);
-    }
+    checkForCompletedLines(newGrid, setScore);
   };
 
   const handleDrop = (shape, rowIndex, cellIndex) => {
-    console.log("Dropped Shape:", shape);
-    console.log("Drop Location:", rowIndex, cellIndex);
-    const startX = cellIndex;
-    const startY = rowIndex;
-  
-    // Check if shape is defined before proceeding
-    if (shape && shape.length > 0) {
-      placeShapeOnGrid(shape, startX, startY);
-    } else {
-      console.error("Shape is undefined or empty.");
-    }
+    placeShapeOnGrid(shape, cellIndex, rowIndex);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDragStart = (e, shape) => {
+    e.dataTransfer.setData('shape', JSON.stringify(shape));
   };
 
   useEffect(() => {
@@ -125,19 +124,19 @@ const App = () => {
     setScore(0);
     setGameOver(false);
   };
-  
+
   return (
     <div className="App">
       <h1>Tenfinity</h1>
       <ScoreBoard score={score} />
       <GridBoard 
         grid={grid} 
-        onDrop={(shape, rowIndex, cellIndex) => handleDrop(shape, rowIndex, cellIndex)} 
+        onDrop={handleDrop} 
+        onDragOver={handleDragOver} 
       />
-      <NextShapes shapes={shapes} currentShapeIndex={currentShapeIndex} />
+      <NextShapes shapes={shapes} currentShapeIndex={currentShapeIndex} onDragStart={handleDragStart} />
       <button onClick={restartGame}>Restart Game</button>
       {gameOver && <GameOver onRestart={restartGame} />}
-      
     </div>
   );
 };

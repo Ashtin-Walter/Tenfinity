@@ -1,3 +1,4 @@
+
 /* App.css */
 body {
   font-family: 'Arial', sans-serif;
@@ -83,4 +84,58 @@ body {
 
 .restart-btn:hover {
   background-color: #21a1f1;
+}
+
+/* Shape.css */
+.shape {
+  display: inline-block;
+  cursor: grab;
+}
+
+.shape-row {
+  display: flex;
+}
+
+.shape-cell {
+  width: 20px;
+  height: 20px;
+  border: 1px solid gray;
+}
+
+.shape-cell.filled {
+  background-color: blue;
+}
+
+/* ScoreBoard.css */
+.score-board {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+/* NextShapes.css */
+.next-shapes {
+  margin-top: 20px;
+}
+
+.shape-previews {
+  display: flex;
+  flex-direction: column;
+}
+
+.shape-preview {
+  margin-bottom: 10px;
+}
+
+.shape-preview.current {
+  border: 2px solid red;  /* Highlight the current shape */
+}
+
+/* GridCell.css */
+.grid-cell {
+  border: 1px solid gray;  /* Add borders for better visibility */
+}
+
+.grid-cell.filled {
+  background-color: blue;  /* Ensure the color is visible */
 }
