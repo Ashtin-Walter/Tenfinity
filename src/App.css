@@ -139,3 +139,16 @@ body {
 .grid-cell.filled {
   background-color: blue;  /* Ensure the color is visible */
 }
+
+
+/* footer */
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+}

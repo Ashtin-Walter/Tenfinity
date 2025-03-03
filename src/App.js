@@ -137,6 +137,12 @@ const App = () => {
       <NextShapes shapes={shapes} currentShapeIndex={currentShapeIndex} onDragStart={handleDragStart} />
       <button onClick={restartGame}>Restart Game</button>
       {gameOver && <GameOver onRestart={restartGame} />}
+      <footer className='footer'>
+        <p>
+          Created by{' '}
+          <a href="https://ajwdev.netlify.app/" target="_blank" rel="noreferrer">Ashtin Walter</a>
+          </p>
+      </footer>
     </div>
   );
 };
