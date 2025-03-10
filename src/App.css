@@ -1,9 +1,19 @@
+:root {
+  --primary-bg: #979292;       
+  --primary-color: #333333;    
+  --accent-color: #3b82f6;     
+  --accent-hover: #2563eb;
+  --cell-size: 40px;
+  --cell-size-mobile: 30px;
+}
 
 /* App.css */
 body {
   font-family: 'Arial', sans-serif;
-  background-color: #282c34;
-  color: white;
+  background: linear-gradient(135deg, #a1c4fd, #c2e9fb); /* more noticeable calming ambient background */
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  color: var(--primary-color);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -13,24 +23,50 @@ body {
 
 .App {
   text-align: center;
+  max-width: 800px;
+  margin: 20px auto;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  margin-top: -20px;
+  position: relative;
+}
+
+/* New header styling for a sleek look */
+.app-header {
+  border-bottom: 2px solid var(--accent-color);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
 }
 
 .grid-board {
   display: grid;
-  grid-template-columns: repeat(10, 40px);
-  grid-template-rows: repeat(10, 40px);
-  gap: 2px;
+  grid-template-columns: repeat(10, var(--cell-size));
+  grid-template-rows: repeat(10, var(--cell-size));
+  gap: 4px; /* increased gap for cleaner separation */
+  background: #f9f9f9; /* subtle light background for grid */
+  padding: 10px;
+  border-radius: 8px;
   margin: 20px auto;
 }
 
 .grid-cell {
-  width: 40px;
-  height: 40px;
-  border: 1px solid #ccc;
+  width: var(--cell-size);
+  height: var(--cell-size);
+  border: 1px solid #e0e0e0; /* lighter border for a clean look */
+  background-color: #ffffff;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  border-radius: 4px; /* rounded corners */
 }
 
 .grid-cell.filled {
-  background-color: blue;
+  background-color: var(--accent-color);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.grid-cell.preview {
+  background-color: rgba(59, 130, 246, 0.3); /* softer, semi-transparent blue preview */
 }
 
 .shape-previews {
@@ -53,6 +89,7 @@ body {
   width: 20px;
   height: 20px;
   border: 1px solid #ccc;
+  transition: background-color 0.3s ease;
 }
 
 .shape-cell.filled {
@@ -74,16 +111,52 @@ body {
   border-radius: 8px;
 }
 
+/* Enhance the game container for a modern feel */
+.game-container {
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+}
+
+/* Modernize the restart button */
 .restart-btn {
   padding: 10px 20px;
-  background-color: #61dafb;
+  background-color: var(--accent-color);
   border: none;
   cursor: pointer;
   border-radius: 5px;
+  transition: background-color 0.3s, box-shadow 0.3s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .restart-btn:hover {
-  background-color: #21a1f1;
+  background-color: var(--accent-hover);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.loader-logo {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 10px;
+  background-color: var(--accent-color);
+  animation: squareLoader 1.5s infinite;
+}
+
+@keyframes squareLoader {
+  0%, 100% {
+    transform: scale(1);
+    background-color: var(--accent-color);
+  }
+  50% {
+    transform: scale(0.5);
+    background-color: var(--accent-hover);
+  }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* Shape.css */
@@ -99,11 +172,15 @@ body {
 .shape-cell {
   width: 20px;
   height: 20px;
-  border: 1px solid gray;
+  border: 1px solid #e0e0e0; /* lighter border for clean look */
+  background: #fff;
+  border-radius: 4px;        /* subtle rounded corners */
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .shape-cell.filled {
-  background-color: blue;
+  background-color: var(--accent-color); /* matches overall color scheme */
+  box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
 }
 
 /* ScoreBoard.css */
@@ -111,6 +188,12 @@ body {
   font-size: 24px;
   font-weight: bold;
   margin: 10px 0;
+  padding: 10px 20px; /* added padding for modern feel */
+  background: linear-gradient(90deg, #3b82f6, #2563eb); /* sleek gradient background */
+  color: #ffffff; /* white text for contrast */
+  border-radius: 8px; /* rounded corners */
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); /* subtle shadow */
 }
 
 /* NextShapes.css */
@@ -120,16 +203,14 @@ body {
 
 .shape-previews {
   display: flex;
-  flex-direction: column;
+  flex-direction: row; /* changed layout to row */
 }
 
 .shape-preview {
-  margin-bottom: 10px;
+  margin-right: 10px; /* changed margin from bottom to right */
 }
 
-.shape-preview.current {
-  border: 2px solid red;  /* Highlight the current shape */
-}
+
 
 /* GridCell.css */
 .grid-cell {
@@ -137,9 +218,8 @@ body {
 }
 
 .grid-cell.filled {
-  background-color: blue;  /* Ensure the color is visible */
+  background-color: var(--accent-color);  /* Ensure the color is visible */
 }
-
 
 /* footer */
 .footer {
@@ -147,8 +227,86 @@ body {
   left: 0;
   bottom: 0;
   width: 100%;
-  background-color: #333;
-  color: white;
+  background-color: #1c1c1c;  /* modern dark background */
+  color: #f3f3f3;             /* light text */
   text-align: center;
-  padding: 10px 0;
+  padding: 15px 0;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+  transition: background-color 0.3s;
+}
+
+.footer a {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+.footer a:hover {
+  color: #2563eb;
+}
+
+.footer p {
+  margin: 0;
+  font-size: 0.9em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  :root {
+    --cell-size: var(--cell-size-mobile);
+  }
+  .grid-board {
+    grid-template-columns: repeat(10, var(--cell-size));
+    grid-template-rows: repeat(10, var(--cell-size));
+    margin: 10px auto;
+  }
+  .grid-cell {
+    width: var(--cell-size);
+    height: var(--cell-size);
+  }
+  .shape {
+    grid-template-columns: repeat(5, 15px);
+    grid-template-rows: repeat(5, 15px);
+  }
+  .shape-cell {
+    width: 15px;
+    height: 15px;
+  }
+  .score-board {
+    font-size: 1.2em;
+  }
+  .restart-btn {
+    padding: 8px 16px;
+    font-size: 0.9em;
+  }
+}
+
+.settings-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.gear-icon {
+  font-size: 24px;
+  cursor: pointer;
+  width: 30px;           /* fixed width to keep layout consistent */
+  text-align: center;
+}
+
+.settings-menu {
+  position: absolute;    /* removed from normal flow */
+  top: 100%;             /* places menu below the gear icon */
+  right: 0;
+  margin-top: 5px;
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
