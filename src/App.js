@@ -73,11 +73,11 @@ const App = () => {
   const [grid, setGrid] = useState(generateEmptyGrid());
   const [shapes, setShapes] = useState([getRandomShape(), getRandomShape(), getRandomShape()]);
   const [score, setScore] = useState(0);
-  const [gameOver, setGameOver] = useState(false);
   // New state for drag preview
   const [draggingShape, setDraggingShape] = useState(null);
   const [previewPos, setPreviewPos] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false); // new state for menu toggle
+  const [gameOver, setGameOver] = useState(false); // new state for game over
 
   // Updated function for placing a shape on the grid
   const placeShapeOnGrid = (shape, startX, startY) => {
@@ -155,8 +155,8 @@ const App = () => {
     setShapes([getRandomShape(), getRandomShape(), getRandomShape()]);
     setScore(0);
     setGameOver(false);
-    setMenuOpen(false);
-  };
+      setMenuOpen(false);
+    };
 
   return (
     <div className="App">
@@ -189,6 +189,7 @@ const App = () => {
         <NextShapes shapes={shapes} onDragStart={handleDragStart} />
         {/* Removed restart-btn from here */}
       </div>
+      {gameOver && <GameOver restartGame={restartGame} />}
       <footer className='footer'>
         <p>
           Created by{' '}
