@@ -1,4 +1,4 @@
-name: Deploy Portfolio
+name: Deploy Tenfinity
 
 on:
   push:
@@ -25,4 +25,4 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./build/ 
-          server-dir: /tenfinity
+          server-dir: /tenfinity/
