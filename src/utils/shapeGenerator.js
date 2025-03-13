@@ -31,10 +31,12 @@ export const getRandomShape = (difficulty = 'normal') => {
 
 const rotateShape = (shape, times) => {
   let rotated = shape;
+  const rotateOnce = (shape) => shape[0].map((_, index) =>
+    shape.map(row => row[index]).reverse()
+  );
+
   for (let i = 0; i < times; i++) {
-    rotated = rotated[0].map((_, index) =>
-      rotated.map(row => row[index]).reverse()
-    );
+    rotated = rotateOnce(rotated);
   }
   return rotated;
 };
