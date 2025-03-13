@@ -73,11 +73,58 @@ const App = () => {
   const [grid, setGrid] = useState(generateEmptyGrid());
   const [shapes, setShapes] = useState([getRandomShape(), getRandomShape(), getRandomShape()]);
   const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(localStorage.getItem('highScore') || 0);
+  const [difficulty, setDifficulty] = useState('normal');
+  const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'default'); // new state for theme
   // New state for drag preview
   const [draggingShape, setDraggingShape] = useState(null);
   const [previewPos, setPreviewPos] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false); // new state for menu toggle
   const [gameOver, setGameOver] = useState(false); // new state for game over
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isLandscape, setIsLandscape] = useState(window.innerHeight < window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      setIsLandscape(window.innerHeight < window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
+
+  // Add touch event handlers
+  const handleTouchStart = (e, index, shape) => {
+    e.preventDefault();
+    setDraggingShape({ index, shape });
+  };
+
+  const handleTouchMove = (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (element?.dataset?.row !== undefined && element?.dataset?.col !== undefined) {
+      setPreviewPos({
+        row: Number(element.dataset.row),
+        col: Number(element.dataset.col)
+      });
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (previewPos && draggingShape) {
+      handleDrop();
+    }
+    setDraggingShape(null);
+    setPreviewPos(null);
+  };
 
   // Updated function for placing a shape on the grid
   const placeShapeOnGrid = (shape, startX, startY) => {
@@ -150,50 +197,136 @@ const App = () => {
     }
   }, [grid, shapes]);
 
+  useEffect(() => {
+    // Update high score
+    if (score > highScore) {
+      setHighScore(score);
+      localStorage.setItem('highScore', score);
+    }
+  }, [score, highScore]);
+
+  useEffect(() => {
+    // Apply dark mode
+    document.body.classList.toggle('dark-mode', darkMode);
+    localStorage.setItem('darkMode', darkMode);
+  }, [darkMode]);
+
+  useEffect(() => {
+    // Apply theme
+    document.body.classList.toggle('theme-modern', theme === 'modern');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
+  const changeTheme = (newTheme) => {
+    setTheme(newTheme);
+  };
+
+  const changeDifficulty = (level) => {
+    setDifficulty(level);
+    restartGame();
+  };
+
+  // Updated getRandomShape call based on difficulty
+  const getNextShape = () => {
+    const complexity = difficulty === 'easy' ? 3 : difficulty === 'normal' ? 4 : 5;
+    return getRandomShape(complexity);
+  };
+
+  // Modified restart game to use new difficulty
   const restartGame = () => {
     setGrid(generateEmptyGrid());
-    setShapes([getRandomShape(), getRandomShape(), getRandomShape()]);
+    setShapes([getNextShape(), getNextShape(), getNextShape()]);
     setScore(0);
     setGameOver(false);
-      setMenuOpen(false);
-    };
+    setMenuOpen(false);
+  };
+
+  // Handle menu positioning
+  const handleMenuOpen = () => {
+    setMenuOpen(true);
+    if (isMobile) {
+      document.body.style.overflow = 'hidden';
+    }
+  };
+
+  const handleMenuClose = () => {
+    setMenuOpen(false);
+    document.body.style.overflow = '';
+  };
 
   return (
-    <div className="App">
+    <div className={`App ${darkMode ? 'dark-mode' : ''} ${isLandscape ? 'landscape' : 'portrait'} ${theme}`}>
       <header className="app-header">
-        <div className="loader-logo"></div> 
         <h1>Tenfinity</h1>
+        <div className="loader-logo"></div>
+        <div className="header-score">
+          <ScoreBoard score={score} highScore={highScore} />
+        </div>
       </header>
       {/* New settings icon and menu */}
-      <div className="settings-container">
-        <div className="gear-icon" onClick={() => setMenuOpen(!menuOpen)}>⚙️</div>
+      <div className={`settings-container ${menuOpen ? 'menu-open' : ''}`}>
+        <div className="gear-icon" onClick={handleMenuOpen}>⚙️</div>
         {menuOpen && (
-          <div className="settings-menu">
-            <button className="menu-btn" onClick={restartGame}>Restart Game</button>
-            <button className="menu-btn">Placeholder 1</button>
-            <button className="menu-btn">Placeholder 2</button>
-          </div>
+          <>
+            <div className="settings-backdrop" onClick={handleMenuClose}></div>
+            <div className="settings-menu">
+              <button className="menu-btn" onClick={restartGame}>Restart Game</button>
+              <div className="difficulty-buttons">
+                <button className={`menu-btn ${difficulty === 'easy' ? 'active' : ''}`} 
+                        onClick={() => changeDifficulty('easy')}>Easy</button>
+                <button className={`menu-btn ${difficulty === 'normal' ? 'active' : ''}`} 
+                        onClick={() => changeDifficulty('normal')}>Normal</button>
+                <button className={`menu-btn ${difficulty === 'hard' ? 'active' : ''}`} 
+                        onClick={() => changeDifficulty('hard')}>Hard</button>
+              </div>
+              <button className="menu-btn" onClick={toggleDarkMode}>
+                {darkMode ? 'Light Mode' : 'Dark Mode'}
+              </button>
+              <div className="theme-buttons">
+                <button className={`menu-btn ${theme === 'default' ? 'active' : ''}`} 
+                        onClick={() => changeTheme('default')}>Default</button>
+                <button className={`menu-btn ${theme === 'modern' ? 'active' : ''}`} 
+                        onClick={() => changeTheme('modern')}>Modern</button>
+              </div>
+              <button className="menu-btn close-btn" onClick={handleMenuClose}>✕</button>
+            </div>
+          </>
         )}
       </div>
-      <ScoreBoard score={score} />
       <div className="game-container">
-        <GridBoard 
-          grid={grid} 
-          onDrop={handleDrop} 
-          onDragOver={handleDragOver} 
-          onDragLeave={handleDragLeave}
-          // New props for preview
-          previewShape={draggingShape && draggingShape.shape}
-          previewPos={previewPos}
-        />
-        <NextShapes shapes={shapes} onDragStart={handleDragStart} />
-        {/* Removed restart-btn from here */}
+        <div className="shapes-container">
+          <NextShapes 
+            shapes={shapes} 
+            onDragStart={handleDragStart}
+            onTouchStart={handleTouchStart}
+            isMobile={isMobile}
+          />
+        </div>
+        <div className="grid-board-container">
+          <GridBoard 
+            grid={grid} 
+            onDrop={handleDrop} 
+            onDragOver={handleDragOver} 
+            onDragLeave={handleDragLeave}
+            // New props for preview
+            previewShape={draggingShape && draggingShape.shape}
+            previewPos={previewPos}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            isMobile={isMobile}
+          />
+        </div>
       </div>
       {gameOver && <GameOver restartGame={restartGame} />}
       <footer className='footer'>
         <p>
           Created by{' '}
-          <a href="https://ajwdev.netlify.app/" target="_blank" rel="noreferrer">Ashtin Walter</a>
+          <a href="https://walterhouse.co.za" target="_blank" rel="noreferrer">Ashtin Walter</a>
         </p>
       </footer>
     </div>
