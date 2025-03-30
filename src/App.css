@@ -3,6 +3,7 @@
   --primary-color: #333333;    
   --accent-color: #3b82f6;     
   --accent-hover: #2563eb;
+ 
   --cell-size: 40px;
   --cell-size-mobile: 30px;
   --dark-bg: #1a1a1a;
@@ -675,4 +676,50 @@ body {
   .settings-container::before {
     background: rgba(0, 0, 0, 0.7);
   }
+}
+
+/* New styles for animations and modals */
+.tutorial-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--primary-bg);
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  z-index: 1000;
+  max-width: 80%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.tutorial-modal ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+@keyframes clearLine {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; background: #fff; }
+  100% { opacity: 0; }
+}
+
+.cell-cleared {
+  animation: clearLine 0.5s ease-out;
+}
+
+.shape-preview {
+  opacity: 0.5;
+  transition: transform 0.2s ease;
+}
+
+.shape-placed {
+  animation: placePop 0.3s ease-out;
+}
+
+@keyframes placePop {
+  0% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }

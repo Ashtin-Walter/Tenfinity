@@ -77,13 +77,14 @@ const App = () => {
   const [difficulty, setDifficulty] = useState('normal');
   const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'default'); // new state for theme
-  // New state for drag preview
   const [draggingShape, setDraggingShape] = useState(null);
   const [previewPos, setPreviewPos] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false); // new state for menu toggle
   const [gameOver, setGameOver] = useState(false); // new state for game over
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isLandscape, setIsLandscape] = useState(window.innerHeight < window.innerWidth);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(!localStorage.getItem('tutorialSeen'));
+  const [gameState, setGameState] = useState(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -100,7 +101,19 @@ const App = () => {
     };
   }, []);
 
-  // Add touch event handlers
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'r' || e.key === 'R') {
+        restartGame();
+      } else if (e.key === 'h' || e.key === 'H') {
+        setIsTutorialOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
+
   const handleTouchStart = (e, index, shape) => {
     e.preventDefault();
     setDraggingShape({ index, shape });
@@ -126,7 +139,6 @@ const App = () => {
     setPreviewPos(null);
   };
 
-  // Updated function for placing a shape on the grid
   const placeShapeOnGrid = (shape, startX, startY) => {
     const newGrid = grid.map(row => [...row]);
 
@@ -140,39 +152,40 @@ const App = () => {
             newGrid[gridY][gridX] = true;
           } else {
             console.warn(`Shape part out of bounds or cell already filled at [${gridY}, ${gridX}]`);
-            return;
+            return false;
           }
         }
       }
     }
 
-    // Instead of setting grid here, pass the grid to checkForCompletedLines to update grid and score
     checkForCompletedLines(newGrid, setScore, setGrid);
+    return true;
   };
 
-  // Updated handleDrop to check for e.preventDefault before calling it
   const handleDrop = (e) => {
     if (e && typeof e.preventDefault === "function") {
       e.preventDefault();
     }
-    if (!previewPos) return;
+    if (!previewPos || !draggingShape) return;
+    
     const { row: rowIndex, col: cellIndex } = previewPos;
-    if (!draggingShape) return;
-    placeShapeOnGrid(draggingShape.shape, cellIndex, rowIndex);
-    const newShapes = shapes.map((s, i) => i === draggingShape.index ? null : s);
-    if (newShapes.every(s => s === null)) {
-      setShapes([getRandomShape(), getRandomShape(), getRandomShape()]);
-    } else {
-      setShapes(newShapes);
+    const success = placeShapeOnGrid(draggingShape.shape, cellIndex, rowIndex);
+    
+    if (success) {
+      const newShapes = shapes.map((s, i) => i === draggingShape.index ? null : s);
+      if (newShapes.every(s => s === null)) {
+        setShapes([getRandomShape(), getRandomShape(), getRandomShape()]);
+      } else {
+        setShapes(newShapes);
+      }
     }
+    
     setDraggingShape(null);
     setPreviewPos(null);
   };
 
-  // Update the handleDragOver function:
   const handleDragOver = (e) => {
     e.preventDefault();
-    // Use currentTarget to get the grid cell's data attributes
     const row = Number(e.currentTarget.getAttribute('data-row'));
     const col = Number(e.currentTarget.getAttribute('data-col'));
     if (!isNaN(row) && !isNaN(col)) {
@@ -180,12 +193,10 @@ const App = () => {
     }
   };
 
-  // Optional: clear preview when leaving a cell
   const handleDragLeave = (e) => {
     setPreviewPos(null);
   };
 
-  // Updated to accept shape index as well
   const handleDragStart = (e, index, shape) => {
     setDraggingShape({ index, shape });
     e.dataTransfer.setData('shape', JSON.stringify(shape));
@@ -198,7 +209,6 @@ const App = () => {
   }, [grid, shapes]);
 
   useEffect(() => {
-    // Update high score
     if (score > highScore) {
       setHighScore(score);
       localStorage.setItem('highScore', score);
@@ -206,13 +216,11 @@ const App = () => {
   }, [score, highScore]);
 
   useEffect(() => {
-    // Apply dark mode
     document.body.classList.toggle('dark-mode', darkMode);
     localStorage.setItem('darkMode', darkMode);
   }, [darkMode]);
 
   useEffect(() => {
-    // Apply theme
     document.body.classList.toggle('theme-modern', theme === 'modern');
     localStorage.setItem('theme', theme);
   }, [theme]);
@@ -230,13 +238,11 @@ const App = () => {
     restartGame();
   };
 
-  // Updated getRandomShape call based on difficulty
   const getNextShape = () => {
     const complexity = difficulty === 'easy' ? 3 : difficulty === 'normal' ? 4 : 5;
     return getRandomShape(complexity);
   };
 
-  // Modified restart game to use new difficulty
   const restartGame = () => {
     setGrid(generateEmptyGrid());
     setShapes([getNextShape(), getNextShape(), getNextShape()]);
@@ -245,7 +251,27 @@ const App = () => {
     setMenuOpen(false);
   };
 
-  // Handle menu positioning
+  const saveGame = () => {
+    const gameState = {
+      grid,
+      shapes,
+      score,
+      difficulty
+    };
+    localStorage.setItem('gameState', JSON.stringify(gameState));
+  };
+
+  const loadGame = () => {
+    const savedState = localStorage.getItem('gameState');
+    if (savedState) {
+      const { grid, shapes, score, difficulty } = JSON.parse(savedState);
+      setGrid(grid);
+      setShapes(shapes);
+      setScore(score);
+      setDifficulty(difficulty);
+    }
+  };
+
   const handleMenuOpen = () => {
     setMenuOpen(true);
     if (isMobile) {
@@ -267,7 +293,24 @@ const App = () => {
           <ScoreBoard score={score} highScore={highScore} />
         </div>
       </header>
-      {/* New settings icon and menu */}
+      
+      {isTutorialOpen && (
+        <div className="tutorial-modal">
+          <h2>How to Play</h2>
+          <p>Drag and drop shapes onto the grid to create complete lines.</p>
+          <p>Clear lines horizontally or vertically to score points!</p>
+          <p>Keyboard shortcuts:</p>
+          <ul>
+            <li>R - Restart game</li>
+            <li>H - Show this help</li>
+          </ul>
+          <button onClick={() => {
+            setIsTutorialOpen(false);
+            localStorage.setItem('tutorialSeen', 'true');
+          }}>Got it!</button>
+        </div>
+      )}
+
       <div className={`settings-container ${menuOpen ? 'menu-open' : ''}`}>
         <div className="gear-icon" onClick={handleMenuOpen}>⚙️</div>
         {menuOpen && (
@@ -292,6 +335,9 @@ const App = () => {
                 <button className={`menu-btn ${theme === 'modern' ? 'active' : ''}`} 
                         onClick={() => changeTheme('modern')}>Modern</button>
               </div>
+              <button className="menu-btn" onClick={saveGame}>Save Game</button>
+              <button className="menu-btn" onClick={loadGame}>Load Game</button>
+              <button className="menu-btn" onClick={() => setIsTutorialOpen(true)}>Help</button>
               <button className="menu-btn close-btn" onClick={handleMenuClose}>✕</button>
             </div>
           </>
@@ -312,7 +358,6 @@ const App = () => {
             onDrop={handleDrop} 
             onDragOver={handleDragOver} 
             onDragLeave={handleDragLeave}
-            // New props for preview
             previewShape={draggingShape && draggingShape.shape}
             previewPos={previewPos}
             onTouchStart={handleTouchStart}
