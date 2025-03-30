@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import GridBoard from './components/GridBoard';
 import NextShapes from './components/NextShapes';
 import GameOver from './components/GameOver';
@@ -84,62 +84,27 @@ const App = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isLandscape, setIsLandscape] = useState(window.innerHeight < window.innerWidth);
   const [isTutorialOpen, setIsTutorialOpen] = useState(!localStorage.getItem('tutorialSeen'));
-  const [gameState, setGameState] = useState(null);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-      setIsLandscape(window.innerHeight < window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-    };
+  const changeDifficulty = useCallback((newDifficulty) => {
+    setDifficulty(newDifficulty);
+    // Restart game when difficulty changes
+    setGrid(generateEmptyGrid());
+    setShapes([getRandomShape(), getRandomShape(), getRandomShape()]);
+    setScore(0);
+    setGameOver(false);
   }, []);
 
-  useEffect(() => {
-    const handleKeyPress = (e) => {
-      if (e.key === 'r' || e.key === 'R') {
-        restartGame();
-      } else if (e.key === 'h' || e.key === 'H') {
-        setIsTutorialOpen(true);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+  const restartGame = useCallback(() => {
+    setGrid(generateEmptyGrid());
+    // Use getRandomShape directly instead of getNextShape
+    setShapes([getRandomShape(), getRandomShape(), getRandomShape()]);
+    setScore(0);
+    setGameOver(false);
+    setMenuOpen(false);
   }, []);
 
-  const handleTouchStart = (e, index, shape) => {
-    e.preventDefault();
-    setDraggingShape({ index, shape });
-  };
 
-  const handleTouchMove = (e) => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    const element = document.elementFromPoint(touch.clientX, touch.clientY);
-    if (element?.dataset?.row !== undefined && element?.dataset?.col !== undefined) {
-      setPreviewPos({
-        row: Number(element.dataset.row),
-        col: Number(element.dataset.col)
-      });
-    }
-  };
-
-  const handleTouchEnd = () => {
-    if (previewPos && draggingShape) {
-      handleDrop();
-    }
-    setDraggingShape(null);
-    setPreviewPos(null);
-  };
-
-  const placeShapeOnGrid = (shape, startX, startY) => {
+  const placeShapeOnGrid = useCallback((shape, startX, startY) => {
     const newGrid = grid.map(row => [...row]);
 
     for (let y = 0; y < shape.length; y++) {
@@ -151,7 +116,6 @@ const App = () => {
           if (gridY >= 0 && gridY < GRID_SIZE && gridX >= 0 && gridX < GRID_SIZE && !newGrid[gridY][gridX]) {
             newGrid[gridY][gridX] = true;
           } else {
-            console.warn(`Shape part out of bounds or cell already filled at [${gridY}, ${gridX}]`);
             return false;
           }
         }
@@ -160,9 +124,9 @@ const App = () => {
 
     checkForCompletedLines(newGrid, setScore, setGrid);
     return true;
-  };
+  }, [grid]);
 
-  const handleDrop = (e) => {
+  const handleDrop = useCallback((e) => {
     if (e && typeof e.preventDefault === "function") {
       e.preventDefault();
     }
@@ -182,6 +146,73 @@ const App = () => {
     
     setDraggingShape(null);
     setPreviewPos(null);
+  }, [previewPos, draggingShape, shapes, placeShapeOnGrid]);
+
+  const handleTouchMove = useCallback((e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (element?.dataset?.row !== undefined && element?.dataset?.col !== undefined) {
+      setPreviewPos({
+        row: Number(element.dataset.row),
+        col: Number(element.dataset.col)
+      });
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    handleDrop();
+    setDraggingShape(null);
+    setPreviewPos(null);
+  }, [handleDrop]);
+
+ 
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      setIsLandscape(window.innerHeight < window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) {
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd);
+    }
+    
+    return () => {
+      if (isMobile) {
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
+      }
+    };
+  }, [isMobile, handleTouchMove, handleTouchEnd]);
+
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'r' || e.key === 'R') {
+        restartGame();
+      } else if (e.key === 'h' || e.key === 'H') {
+        setIsTutorialOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [restartGame]);
+
+  const handleTouchStart = (e, index, shape) => {
+    e.preventDefault();
+    setDraggingShape({ index, shape });
   };
 
   const handleDragOver = (e) => {
@@ -231,24 +262,6 @@ const App = () => {
 
   const changeTheme = (newTheme) => {
     setTheme(newTheme);
-  };
-
-  const changeDifficulty = (level) => {
-    setDifficulty(level);
-    restartGame();
-  };
-
-  const getNextShape = () => {
-    const complexity = difficulty === 'easy' ? 3 : difficulty === 'normal' ? 4 : 5;
-    return getRandomShape(complexity);
-  };
-
-  const restartGame = () => {
-    setGrid(generateEmptyGrid());
-    setShapes([getNextShape(), getNextShape(), getNextShape()]);
-    setScore(0);
-    setGameOver(false);
-    setMenuOpen(false);
   };
 
   const saveGame = () => {
