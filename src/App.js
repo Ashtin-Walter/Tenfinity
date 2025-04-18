@@ -4,7 +4,7 @@ import NextShapes from './components/NextShapes';
 import GameOver from './components/GameOver';
 import ScoreBoard from './components/ScoreBoard';
 import SettingsMenu from './components/SettingsMenu';
-import { getRandomShape, getBalancedShapes, centerShape } from './utils/shapeGenerator';
+import { getBalancedShapes } from './utils/shapeGenerator';
 import './App.css';
 
 const GRID_SIZE = 10; // added constant GRID_SIZE

@@ -2,10 +2,12 @@
   /* Modern color palette */
   --primary-bg: #f8f9fa;       
   --primary-color: #333333;    
-  --accent-color: #4d61fc;     
+  --accent-color: #4d61fc;
+  --accent-color-rgb: 77, 97, 252; /* Added RGB values for accent color */     
   --accent-hover: #3447f2;
   --secondary-color: #ff7e5f;
   --tertiary-color: #6c63ff;
+  --tertiary-color-rgb: 108, 99, 255; /* Added RGB values for tertiary color */
   
   /* Dark mode colors */
   --dark-bg: #121212;
@@ -1739,7 +1741,7 @@ body {
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
-}
+} 
 
 .close-btn:hover {
   background: rgba(255, 255, 255, 0.3);
