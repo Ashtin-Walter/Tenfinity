@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import Shape from './Shape';
 import PropTypes from 'prop-types';
 
-const NextShapes = ({ shapes, onDragStart, onTouchStart, isMobile }) => {
+const NextShapes = ({ shapes, onDragStart, onTouchStart, isMobile, onShapeClick, selectedShapeIndex }) => {
   const renderedShapes = useMemo(() => (
     shapes.map((shape, index) => 
       shape ? (
@@ -11,6 +11,8 @@ const NextShapes = ({ shapes, onDragStart, onTouchStart, isMobile }) => {
             shape={shape} 
             onDragStart={(e) => onDragStart(e, index, shape)}
             onTouchStart={(e) => onTouchStart(e, index, shape)}
+            onShapeClick={() => onShapeClick && onShapeClick(index, shape)}
+            isSelected={selectedShapeIndex === index}
             isMobile={isMobile}
           />
         </div>
@@ -18,7 +20,7 @@ const NextShapes = ({ shapes, onDragStart, onTouchStart, isMobile }) => {
         <div key={index} className="shape-preview empty" />
       )
     )
-  ), [shapes, onDragStart, onTouchStart, isMobile]);
+  ), [shapes, onDragStart, onTouchStart, onShapeClick, selectedShapeIndex, isMobile]);
 
   return (
     <div className="next-shapes">
@@ -34,7 +36,9 @@ NextShapes.propTypes = {
   ])).isRequired,
   onDragStart: PropTypes.func.isRequired,
   onTouchStart: PropTypes.func.isRequired,
-  isMobile: PropTypes.bool.isRequired
+  isMobile: PropTypes.bool.isRequired,
+  onShapeClick: PropTypes.func,
+  selectedShapeIndex: PropTypes.number
 };
 
 export default React.memo(NextShapes);
