@@ -511,29 +511,42 @@ const App = () => {
       </header>
       
       {isTutorialOpen && (
-        <div className="tutorial-modal">
-          <h2>How to Play</h2>
-          <p>Drag and drop shapes onto the grid to create complete lines.</p>
-          <p>Clear lines horizontally or vertically to score points!</p>
+        <>
+          <div className="tutorial-backdrop"></div>
+          <div className="tutorial-modal">
+            <button 
+              className="tutorial-close-btn" 
+              onClick={() => {
+                setIsTutorialOpen(false);
+                localStorage.setItem('tutorialSeen', 'true');
+              }}
+              aria-label="Close tutorial"
+            >
+              ✕
+            </button>
+            <h2>How to Play</h2>
+            <p>Drag and drop shapes onto the grid to create complete lines.</p>
+            <p>Clear lines horizontally or vertically to score points!</p>
           
-          <h4>Difficulty Levels:</h4>
-          <ul>
-            <li><strong>Easy:</strong> Simpler shapes like squares and small lines</li>
-            <li><strong>Normal:</strong> Classic shapes including T, Z and L shapes</li>
-            <li><strong>Hard:</strong> Complex shapes with more blocks and unusual patterns</li>
-            <li><strong>Extreme:</strong> All shapes from all difficulty levels mixed together!</li>
-          </ul>
+            <h4>Difficulty Levels:</h4>
+            <ul>
+              <li><strong>Easy:</strong> Simpler shapes like squares and small lines</li>
+              <li><strong>Normal:</strong> Classic shapes including T, Z and L shapes</li>
+              <li><strong>Hard:</strong> Complex shapes with more blocks and unusual patterns</li>
+              <li><strong>Extreme:</strong> All shapes from all difficulty levels mixed together!</li>
+            </ul>
           
-          <p>Keyboard shortcuts:</p>
-          <ul>
-            <li>R - Restart game</li>
-            <li>H - Show this help</li>
-          </ul>
-          <button onClick={() => {
-            setIsTutorialOpen(false);
-            localStorage.setItem('tutorialSeen', 'true');
-          }}>Got it!</button>
-        </div>
+            <p>Keyboard shortcuts:</p>
+            <ul>
+              <li>R - Restart game</li>
+              <li>H - Show this help</li>
+            </ul>
+            <button onClick={() => {
+              setIsTutorialOpen(false);
+              localStorage.setItem('tutorialSeen', 'true');
+            }}>Got it!</button>
+          </div>
+        </>
       )}
 
       <div className="settings-container">
@@ -561,6 +574,11 @@ const App = () => {
         />
       </div>
       <div className="game-container">
+        {isMobile && (
+          <div className="mobile-score-display">
+            <ScoreBoard score={score} highScore={highScore} />
+          </div>
+        )}
         <div className="shapes-container">
           <NextShapes 
             shapes={shapes} 
