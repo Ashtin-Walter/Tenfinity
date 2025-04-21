@@ -62,9 +62,11 @@ body {
   min-width: var(--min-game-width);
   margin: 0 auto;
   padding: var(--game-padding);
-  height: 100vh;
-  display: grid;
-  grid-template-rows: auto auto 1fr auto;
+  height: auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  grid-template-rows: none;
   gap: 1rem;
   overflow-x: hidden;
   background-color: rgba(255, 255, 255, 0.08);
@@ -88,6 +90,7 @@ body {
   backdrop-filter: blur(10px);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-top: 1rem;
 }
 
 .app-header h1 {
@@ -165,6 +168,12 @@ body {
   }
 }
 
+/* Add border-box sizing to grid board and container */
+.grid-board,
+.grid-board-container {
+  box-sizing: border-box;
+}
+
 .grid-board {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
@@ -196,13 +205,14 @@ body {
 .grid-cell {
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.1);
   transition: all 0.3s var(--animation-timing);
   position: relative;
   overflow: hidden;
   z-index: 1;
+  box-sizing: border-box;
 }
 
 .grid-cell::after {
@@ -214,7 +224,7 @@ body {
 }
 
 .grid-cell.filled {
-  background-color: var(--accent-color);
+  /* Allow inline shape color to show instead of default accent color */
   transform: scale(0.95);
   box-shadow: 
     0 0 20px var(--accent-color),
@@ -225,7 +235,10 @@ body {
 
 .grid-cell.preview {
   background-color: rgba(var(--accent-color-rgb), 0.3);
-  border: 3px dashed var(--accent-color);
+  border: none;
+  outline: 3px dashed var(--accent-color);
+  outline-offset: -1px;
+  box-sizing: border-box;
   box-shadow: 0 0 20px rgba(var(--accent-color-rgb), 0.5);
   animation: pulse 1.5s infinite alternate;
   z-index: 5;
@@ -250,7 +263,6 @@ body {
   z-index: 6;
   pointer-events: none;
 }
-
 /* Special treatment for dark mode */
 .dark-mode .grid-cell.preview {
   background-color: rgba(var(--accent-color-rgb), 0.4);
@@ -294,9 +306,7 @@ body {
   transition: background-color 0.3s ease;
 }
 
-.shape-cell.filled {
-  background-color: blue;
-}
+
 
 .score-board {
   font-size: 1.5em;
@@ -327,6 +337,12 @@ body {
   min-height: 70vh;
   place-items: center;
   box-sizing: border-box;
+  flex: 1;
+  overflow: auto;
+
+}
+.game-container::-webkit-scrollbar {
+  display: none;
 }
 
 .grid-board-container {
@@ -666,15 +682,20 @@ body {
 }
 
 .grid-cell.filled {
-  background-color: var(--accent-color);  /* Ensure the color is visible */
+  /* Allow inline shape color to show instead of default accent color */
+  transform: scale(0.95);
+  box-shadow: 
+    0 0 20px var(--accent-color),
+    inset 0 0 5px rgba(255, 255, 255, 0.5);
+  border-color: transparent;
+  z-index: 2;
 }
 
 /* Modern Footer */
 .footer {
-  position: fixed;
-  left: 0;
-  bottom: 0;
+  position: static;
   width: 100%;
+  margin-top: auto;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(10px);
   color: #ffffff;
@@ -880,9 +901,10 @@ body {
 }
 
 .settings-container {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  position: fixed;
+  top: var(--game-padding);
+  right: var(--game-padding);
+  z-index: 1000;
 }
 
 .gear-icon {
@@ -890,22 +912,180 @@ body {
   cursor: pointer;
   width: 30px;           /* fixed width to keep layout consistent */
   text-align: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-bg);
+  border: none;
+  border-radius: 50%;
+  box-shadow: var(--inner-shadow);
+  transition: transform var(--transition-speed), background var(--transition-speed);
+}
+
+.gear-icon:hover {
+  transform: rotate(90deg);
+  background: var(--accent-hover);
+}
+
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 90;
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
+  backdrop-filter: blur(2px);
+  transition: opacity var(--transition-speed);
+  pointer-events: none;
+}
+
+.settings-backdrop.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .settings-menu {
-  position: absolute;    /* removed from normal flow */
-  top: 100%;             /* places menu below the gear icon */
-  right: 0;
-  margin-top: 5px;
-  background: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  padding: 10px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  width: var(--menu-width);
+  max-width: 90vw;
+  max-height: 85vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: var(--primary-bg);
+  color: var(--primary-color);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity var(--transition-speed), transform var(--transition-speed);
+  animation: menuAppear 0.3s forwards;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  animation: slideIn 0.3s ease-out;
+}
+
+.settings-menu.active {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+@keyframes menuAppear {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--accent-color);
+  color: white;
+  border-radius: 12px 12px 0 0;
+}
+
+.menu-title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 500;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: white;
+  cursor: pointer;
+  width: 30px !important;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Tab navigation */
+.settings-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--secondary-color);
+}
+
+.settings-tab {
+  flex: 1;
+  padding: 0.75rem;
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  text-align: center;
+  transition: background var(--transition-speed);
+}
+
+.settings-tab.active {
+  background: var(--secondary-color);
+  color: #fff;
+}
+
+/* Content area */
+.settings-content {
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Panel grouping */
+.settings-panel {
+  display: none;
+}
+
+.settings-panel.active {
+  display: block;
+}
+
+/* Utility classes */
+.panel-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Buttons */
+.menu-btn {
+  padding: 0.75rem 1rem;
+  background: var(--accent-color);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background var(--transition-speed);
+}
+
+.menu-btn:hover {
+  background: var(--accent-hover);
 }
 
 /* Touch device optimizations */
@@ -1353,8 +1533,8 @@ body {
 /* Settings Menu Styles */
 .settings-container {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 40px;
+  right: 20px;
   z-index: 100;
 }
 
@@ -1817,7 +1997,7 @@ body {
   
   /* Footer adjustments for mobile */
   .footer {
-    position: fixed;
+    position: static;
     left: 0;
     bottom: 0;
     width: 100%;
@@ -1952,5 +2132,623 @@ body {
     padding: 6px 0;
     font-size: 0.75rem;
     opacity: 0.6;
+  }
+}
+
+/* Mobile Touch Interaction Optimizations */
+@media (max-width: 768px) {
+  /* Enhance touch feedback - provide better visual feedback */
+  .shape-preview:active {
+    transform: scale(1.05);
+    transition: transform 0.15s ease-out;
+  }
+  
+  /* Prevent accidental text selection during touch */
+  .shape, .grid-board, .grid-cell-container, .shape-preview {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  
+  /* Optimize shape for touch - make hitboxes larger */
+  .shape {
+    padding: 6px; /* Increase padding for larger touch area */
+  }
+  
+  /* Improved touch preview feedback */
+  .grid-cell.preview {
+    animation: touchPulse 1s infinite alternate;
+    background-color: rgba(var(--accent-color-rgb), 0.4);
+    border: 2px solid var(--accent-color);
+  }
+  
+  /* Special animation for touch preview */
+  @keyframes touchPulse {
+    0% { opacity: 0.7; transform: scale(0.98); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  
+  /* Make touch targets larger */
+  .grid-cell-container {
+    touch-action: manipulation; /* Improves touch actions on mobile */
+  }
+  
+  /* Enhanced feedback for shape being dragged on mobile */
+  body.touching .shape-preview .shape.selected {
+    transform: scale(1.1);
+    opacity: 0.8;
+    box-shadow: 0 0 20px var(--accent-color);
+    animation: none; /* Disable pulsing animation while actively touching */
+  }
+  
+  /* Add hardware acceleration for smoother animations */
+  .grid-cell,
+  .shape,
+  .shape-cell.filled,
+  .grid-cell.preview,
+  .grid-cell.filled {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  
+  /* Reduce animation complexity for weaker devices */
+  .grid-cell.newly-placed::after {
+    display: none; /* Disable complex glow animations on mobile */
+  }
+  
+  /* Simplified animations for mobile */
+  .grid-cell.filled.newly-placed {
+    animation-duration: 0.3s; /* Faster animation on mobile */
+  }
+}
+
+/* Specific iOS enhancements */
+@supports (-webkit-touch-callout: none) {
+  /* iOS-specific fixes */
+  .shape-preview, .grid-cell-container {
+    cursor: pointer; /* Better indication of touchability on iOS */
+  }
+  
+  /* Disable hover effects on iOS - they create lag after touch */
+  .shape-preview:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  /* Fix for iOS scroll bounce issue */
+  body {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  .App {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+  
+  /* Prevent iOS long press popups */
+  * {
+    -webkit-touch-callout: none;
+  }
+}
+
+/* Mobile Grid Optimizations */
+.mobile-grid {
+  touch-action: manipulation; /* Improved touch scrolling behavior */
+  -webkit-overflow-scrolling: touch;
+  -webkit-tap-highlight-color: transparent; /* Remove the tap highlight on iOS */
+}
+
+.mobile-grid .grid-cell-container {
+  touch-action: none; /* Prevent scrolling when touching cells */
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Enhanced touch feedback for mobile */
+.mobile-grid .grid-cell-container:active {
+  background-color: rgba(var(--accent-color-rgb), 0.1);
+  border-radius: 8px;
+}
+
+/* Improve shape preview visibility on mobile */
+.mobile-grid .grid-cell.preview {
+  background-color: rgba(var(--accent-color-rgb), 0.5); /* More visible */
+  border: 2px solid var(--accent-color);
+  box-shadow: 0 0 15px rgba(var(--accent-color-rgb), 0.8); /* Stronger glow */
+  opacity: 0.9; /* Better visibility */
+  transform: scale(1.05); /* Slightly larger for touch */
+}
+
+/* Prevent iOS double-tap to zoom */
+.grid-board, 
+.shape-preview, 
+.grid-cell-container,
+.shape {
+  touch-action: manipulation;
+}
+
+/* Fix for handling touch events on iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  .mobile-grid .grid-cell-container {
+    will-change: transform; /* Hardware acceleration for smoother performance */
+  }
+  
+  .shape-preview {
+    touch-action: none; /* Prevent accidental scrolling when dragging shapes */
+  }
+  
+  /* Fix for iOS overscroll effect */
+  .App {
+    overflow: hidden;
+    -webkit-overflow-scrolling: auto;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+  
+  /* Enhanced handling for iOS Safari */
+  body.touching {
+    overflow: hidden;
+  }
+  
+  /* More responsive tap feedback */
+  .shape-preview:active, 
+  .mobile-grid .grid-cell-container:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease-out;
+  }
+}
+
+/* Android-specific optimizations */
+@supports not (-webkit-touch-callout: none) {
+  .mobile-grid .grid-cell.preview {
+    animation: androidPreviewPulse 1.5s infinite alternate;
+  }
+  
+  @keyframes androidPreviewPulse {
+    0% { opacity: 0.8; transform: scale(1); }
+    100% { opacity: 1; transform: scale(1.1); }
+  }
+}
+
+/* Ensure smooth transitions on mobile */
+.shape-placed .grid-cell.filled {
+  animation-duration: 0.25s !important; /* Faster animations on mobile */
+}
+
+/* Prevent glitchy touch selection */
+.game-container,
+.grid-board-container,
+.shapes-container,
+.grid-board,
+.grid-cell-container,
+.shape-preview,
+.shape {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Fix for Safari elastic scroll */
+html, body {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Improved visual feedback when a shape is being dragged */
+body.touching .shape-preview.selected {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px var(--accent-color);
+  opacity: 0.8;
+}
+
+/* Enhanced mobile touch interaction styles */
+.shape.dragging, 
+body.touching .shape-preview .shape {
+  will-change: transform, opacity;
+  transform: scale(1.1);
+  transition: none !important; /* Remove transitions during active dragging for immediate response */
+  box-shadow: 0 0 20px var(--accent-color);
+  opacity: 0.85;
+  z-index: 100;
+  pointer-events: none; /* Prevent touch events from being blocked by the shape itself */
+}
+
+/* Improve touch target handling */
+.grid-cell-container {
+  touch-action: none; /* Disable browser touch actions for better control */
+  cursor: pointer;
+}
+
+/* Prevent scrolling when touching shapes */
+.shape-preview {
+  touch-action: none;
+}
+
+/* Optimize mobile animations for performance */
+@media (max-width: 768px) {
+  /* Use hardware acceleration for smooth animations */
+  .grid-cell.preview,
+  .shape.selected,
+  .shape.dragging,
+  body.touching .shape-preview .shape {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Make preview more visible with exaggerated styles */
+  .grid-cell.preview {
+    background-color: rgba(var(--accent-color-rgb), 0.6) !important;
+    border: 2px solid var(--accent-color) !important;
+    box-shadow: 0 0 15px rgba(var(--accent-color-rgb), 0.8) !important;
+    animation: none !important; /* Disable animations during drag for better performance */
+    opacity: 0.95 !important;
+  }
+  
+  /* Don't use animations during drag for better performance */
+  body.touching .grid-cell.preview {
+    animation: none !important;
+    transform: scale(1) !important;
+  }
+}
+
+/* Add border-box sizing to grid board and container */
+.grid-board,
+.grid-board-container {
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  /* Ensure grid board uses full container width without fixed cell sizing to prevent overflow */
+  .grid-board {
+    width: 100% !important;
+    grid-template-columns: repeat(10, 1fr) !important;
+    grid-template-rows: repeat(10, 1fr) !important;
+    padding: 4px !important;
+    gap: 1px !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+}
+
+/* ...existing code... */
+@media (max-width: 768px) {
+  .grid-board {
+    grid-template-columns: repeat(10, 1fr) !important;
+    grid-template-rows: repeat(10, 1fr) !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    gap: var(--grid-gap) !important;
+    padding: var(--grid-gap) !important;
+    margin: 0 auto !important;
+  }
+  .grid-cell {
+    width: auto !important;
+    height: auto !important;
+  }
+}
+
+/* Force grid to fill container with equal squares */
+@media (max-width: 768px) {
+  .grid-board-container {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1 !important;
+    max-width: none !important;
+    max-height: none !important;
+  }
+  .grid-board {
+    display: grid !important;
+    width: 100% !important;
+    height: 100% !important;
+    grid-template-columns: repeat(10, 1fr) !important;
+    grid-auto-rows: 1fr !important;
+    gap: var(--grid-gap) !important;
+    padding: var(--grid-gap) !important;
+  }
+  .grid-cell {
+    aspect-ratio: 1 !important;
+    width: auto !important;
+    height: auto !important;
+  }
+}
+
+/* Final override: ensure grid-cells fit on mobile without overflow */
+@media (max-width: 768px) {
+  .grid-board-container {
+    width: 95vw !important;
+    max-width: 95vh !important;
+    height: auto !important;
+    aspect-ratio: 1 !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+  }
+  .grid-board {
+    grid-template-columns: repeat(10, 1fr) !important;
+    grid-template-rows: repeat(10, 1fr) !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 2px !important;
+    gap: 2px !important;
+  }
+  .grid-cell {
+    width: auto !important;
+    height: auto !important;
+    aspect-ratio: 1 !important;
+    margin: 0 !important;
+  }
+}
+
+/* Allow overall app container to grow for the grid */
+@media (max-width: 768px) {
+  .App {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+  .game-container {
+    height: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Calculate cell size so 10 cells plus gaps exactly fill viewport width */
+  :root {
+    --cell-size-mobile: calc((100vw - (var(--grid-gap) * 9)) / 10);
+  }
+  .grid-board {
+    grid-template-columns: repeat(10, var(--cell-size-mobile)) !important;
+    grid-template-rows: repeat(10, var(--cell-size-mobile)) !important;
+    padding: 0 !important;
+    gap: var(--grid-gap) !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* Mobile grid visibility and container fit */
+@media (max-width: 768px) {
+  .game-container {
+    overflow-x: hidden;
+  }
+  .grid-board-container {
+    max-width: 100%;
+    padding: var(--grid-gap) !important;
+    overflow: hidden;
+  }
+  .grid-board {
+    grid-template-columns: repeat(10, 1fr) !important;
+    grid-template-rows: repeat(10, 1fr) !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+  .grid-cell:not(.filled):not(.preview) {
+    /* restore stronger contrast like desktop for empty cells */
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: none !important;
+    transition: background-color 0.3s ease;
+  }
+}
+
+/* Mobile: uniform small squares fitting container */
+@media (max-width: 768px) {
+  :root {
+    /* compute a mobile cell size to fit 10 cells + 9 gaps into full width */
+    --cell-size-mobile: calc((100vw - (var(--grid-gap) * 9)) / 10);
+  }
+  .grid-board-container {
+    width: 100% !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .grid-board {
+    display: grid !important;
+    grid-template-columns: repeat(10, var(--cell-size-mobile)) !important;
+    grid-template-rows: repeat(10, var(--cell-size-mobile)) !important;
+    gap: var(--grid-gap) !important;
+    padding: var(--grid-gap) !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 auto !important;
+  }
+  .grid-cell {
+    width: var(--cell-size-mobile) !important;
+    height: var(--cell-size-mobile) !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Consolidated mobile grid override */
+@media (max-width: 768px) {
+  .game-container { overflow-x: hidden; }
+  .grid-board-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+  :root {
+    --cell-size-mobile: calc((100vw - (var(--grid-gap) * 9)) / 10);
+  }
+  .grid-board {
+    display: grid !important;
+    grid-template-columns: repeat(10, var(--cell-size-mobile)) !important;
+    grid-template-rows: repeat(10, var(--cell-size-mobile)) !important;
+    gap: var(--grid-gap) !important;
+    padding: var(--grid-gap) !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 auto !important;
+  }
+  .grid-cell:not(.filled) {
+    width: var(--cell-size-mobile) !important;
+    height: var(--cell-size-mobile) !important;
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Mobile: sharpen squares and ensure container fits */
+@media (max-width: 768px) {
+  /* slightly smaller cells for extra padding */
+  :root { --cell-size-mobile: calc((100vw - (var(--grid-gap) * 9)) / 10 - 2px); }
+
+  /* remove rounding on cells for perfect squares */
+  .grid-cell { border-radius: 0 !important; }
+
+  /* lock container within game area */
+  .App, .game-container, .grid-board-container { overflow-x: hidden !important; }
+  .grid-board-container {
+    width: 100% !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+  }
+
+  /* maintain board padding and gaps */
+  .grid-board { padding: var(--grid-gap) !important; gap: var(--grid-gap) !important; }
+}
+
+/* Final consolidated mobile grid override */
+@media (max-width: 768px) {
+  /* Fit container to viewport */
+  .grid-board-container {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    overflow: hidden !important;
+    box-sizing: border-box;
+  }
+  /* Compute precise cell size */
+  :root {
+    --cell-size-mobile: calc((100vw - (var(--grid-gap) * 9)) / 10);
+  }
+  /* Force grid into uniform squares without overflow */
+  .grid-board {
+    display: grid !important;
+    grid-template-columns: repeat(10, var(--cell-size-mobile)) !important;
+    grid-template-rows:    repeat(10, var(--cell-size-mobile)) !important;
+    gap: var(--grid-gap) !important;
+    padding: var(--grid-gap) !important;
+    width: calc(var(--cell-size-mobile) * 10 + var(--grid-gap) * 9) !important;
+    height: auto !important;
+    margin: 0 auto !important;
+  }
+  /* Ensure each cell stays square */
+  .grid-cell {
+    width: var(--cell-size-mobile) !important;
+    height: var(--cell-size-mobile) !important;
+    aspect-ratio: 1 !important;
+    border-radius: 4px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Remove dot overlay on mobile */
+  .grid-board::before {
+    display: none !important;
+  }
+  /* Reinstate square cells with gentle border-radius */
+  .grid-cell {
+    border-radius: 8px !important;
+  }
+  /* Lock board container within game area */
+  .grid-board-container {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Ensure filled cells display correctly on mobile */
+  .grid-cell.filled {
+    transform: scale(0.95);
+    box-shadow: 
+      0 0 20px var(--accent-color),
+      inset 0 0 5px rgba(255, 255, 255, 0.5);
+    border-color: transparent;
+    z-index: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Fix filled cells to respect original shape colors on mobile */
+  .grid-cell.filled {
+    transform: scale(0.95);
+  box-shadow: 
+    0 0 20px var(--accent-color),
+    inset 0 0 5px rgba(255, 255, 255, 0.5);
+  border-color: transparent;
+  z-index: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Fix filled cells on the grid to respect the original shape colors on mobile */
+  .grid-cell.filled {
+    transform: scale(0.95);
+  box-shadow: 
+    0 0 20px var(--accent-color),
+    inset 0 0 5px rgba(255, 255, 255, 0.5);
+  border-color: transparent;
+  z-index: 2;
+  }
+  
+  /* Important: prevent any other styles from overriding the background-color */
+ 
+}
+
+/* Layout optimization overrides */
+.App {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  /* disable grid rows for static footer flow */
+  grid-template-rows: none;
+}
+
+.game-container {
+  flex: 1;
+  overflow: auto;
+}
+
+.footer {
+  position: static;
+  width: 100%;
+  margin-top: auto;
+}
+
+@media (max-width: 768px) {
+  .footer {
+    position: static;
   }
 }

@@ -24,6 +24,6 @@ jobs:
           lftp -e "
           set ssl:verify-certificate no;
           open -u '${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}' ${{ secrets.FTP_SERVER }};
-          mirror -R ./build/ /tenfinity/;
+          mirror -R ./build/ /games/original/tenfinity/;
           bye
           "

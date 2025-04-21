@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import GridBoard from './components/GridBoard';
 import NextShapes from './components/NextShapes';
 import GameOver from './components/GameOver';
@@ -6,6 +6,7 @@ import ScoreBoard from './components/ScoreBoard';
 import SettingsMenu from './components/SettingsMenu';
 import { getBalancedShapes } from './utils/shapeGenerator';
 import './App.css';
+import Shape from './components/Shape';
 
 const GRID_SIZE = 10; // added constant GRID_SIZE
 
@@ -138,12 +139,18 @@ const App = () => {
   const [draggingShape, setDraggingShape] = useState(null);
   const [selectedShape, setSelectedShape] = useState(null); // new state for click-to-place interaction
   const [previewPos, setPreviewPos] = useState(null);
+  const [dragPosition, setDragPosition] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false); // new state for menu toggle
   const [gameOver, setGameOver] = useState(false); // new state for game over
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isLandscape, setIsLandscape] = useState(window.innerHeight < window.innerWidth);
   const [isTutorialOpen, setIsTutorialOpen] = useState(!localStorage.getItem('tutorialSeen'));
   const [isLineCleared, setIsLineCleared] = useState(false); // new state to track line clearing
+
+  // Add a touchTimeout ref to throttle touch events
+  const touchTimeoutRef = useRef(null);
+  const lastTouchPosRef = useRef(null);
+  const touchStartTimeRef = useRef(0);
 
   const changeDifficulty = useCallback((newDifficulty) => {
     setDifficulty(newDifficulty);
@@ -256,23 +263,106 @@ const App = () => {
     setPreviewPos(null);
   }, [previewPos, draggingShape, shapes, placeShapeOnGrid, getNextShapes]);
 
+  // Improved touch move handler with throttling and better positioning
   const handleTouchMove = useCallback((e) => {
-    e.preventDefault();
+    if (draggingShape) {
+      e.preventDefault();
+    }
     const touch = e.touches[0];
-    const element = document.elementFromPoint(touch.clientX, touch.clientY);
-    if (element?.dataset?.row !== undefined && element?.dataset?.col !== undefined) {
-      setPreviewPos({
-        row: Number(element.dataset.row),
-        col: Number(element.dataset.col)
-      });
+    if (!touch) return;
+    // Track last touch for drop
+    lastTouchPosRef.current = { x: touch.clientX, y: touch.clientY, timestamp: Date.now() };
+    // Update preview position continuously
+    const raw = document.elementFromPoint(touch.clientX, touch.clientY);
+    const cell = raw?.closest('.grid-cell-container');
+    if (cell && cell.dataset.row !== undefined) {
+      setPreviewPos({ row: Number(cell.dataset.row), col: Number(cell.dataset.col) });
+    } else {
+      setPreviewPos(null);
+    }
+    // Update floating drag overlay
+    if (draggingShape) setDragPosition({ x: touch.clientX, y: touch.clientY });
+  }, [draggingShape]);
+
+  // Enhanced touch end handler with better reliability
+  const handleTouchEnd = useCallback((e) => {
+    // Calculate touch duration to distinguish between taps and drags
+    const touchDuration = Date.now() - touchStartTimeRef.current;
+    const wasShortTouch = touchDuration < 300; // Short touches are likely taps
+    
+    // Clear any pending throttle timeout
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+      touchTimeoutRef.current = null;
+    }
+    
+    // Handle drop based on where the user lifted their finger
+    if (lastTouchPosRef.current) {
+      const raw = document.elementFromPoint(
+        lastTouchPosRef.current.x,
+        lastTouchPosRef.current.y
+      );
+      const cell = raw?.closest('.grid-cell-container');
+      if (cell && cell.dataset.row !== undefined) {
+        setPreviewPos({ row: Number(cell.dataset.row), col: Number(cell.dataset.col) });
+      } else {
+        setPreviewPos(null);
+      }
+    }
+    
+    handleDrop();
+    
+    // Only reset draggingShape and preview if this wasn't a short touch/tap
+    // This helps for click-to-place where we want to keep the selection
+    if (!wasShortTouch || !selectedShape) {
+      setDraggingShape(null);
+      setPreviewPos(null);
+    }
+    
+    lastTouchPosRef.current = null;
+    
+    // Remove the touching class
+    document.body.classList.remove('touching');
+
+    // clear drag overlay
+    setDragPosition(null);
+  }, [handleDrop, selectedShape]);
+
+  // Improved touch start handler with better tracking
+  const handleTouchStart = useCallback((e, index, shape) => {
+    // Only prevent default if we're interacting with a shape
+    // This allows normal scrolling when not dragging
+    if (index !== undefined && shape) {
+      e.preventDefault();
+    }
+    
+    touchStartTimeRef.current = Date.now();
+    
+    // Clear any existing touch timeout
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+      touchTimeoutRef.current = null;
+    }
+    
+    // Capture initial touch position with timestamp for better tracking
+    if (e.touches && e.touches[0]) {
+      lastTouchPosRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+        timestamp: Date.now()
+      };
+    }
+    
+    // If a shape index is provided, we're starting to drag a shape
+    if (index !== undefined && shape) {
+      setDraggingShape({ index, shape });
+      // Add a class to indicate active dragging for visual feedback
+      document.body.classList.add('touching');
+
+      // initialize drag position overlay
+      if (e.touches && e.touches[0]) setDragPosition({ x: e.touches[0].clientX, y: e.touches[0].clientY });
     }
   }, []);
-
-  const handleTouchEnd = useCallback(() => {
-    handleDrop();
-    setDraggingShape(null);
-    setPreviewPos(null);
-  }, [handleDrop]);
 
   // Handle clicking on a shape to select it
   const handleShapeClick = useCallback((index, shape) => {
@@ -372,12 +462,21 @@ const App = () => {
     if (isMobile) {
       document.addEventListener('touchmove', handleTouchMove, { passive: false });
       document.addEventListener('touchend', handleTouchEnd);
+      
+      // Add touchcancel handling for better reliability
+      document.addEventListener('touchcancel', handleTouchEnd);
     }
     
     return () => {
       if (isMobile) {
         document.removeEventListener('touchmove', handleTouchMove);
         document.removeEventListener('touchend', handleTouchEnd);
+        document.removeEventListener('touchcancel', handleTouchEnd);
+        
+        // Also clean up any lingering timeouts
+        if (touchTimeoutRef.current) {
+          clearTimeout(touchTimeoutRef.current);
+        }
       }
     };
   }, [isMobile, handleTouchMove, handleTouchEnd]);
@@ -395,10 +494,22 @@ const App = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [restartGame]);
 
-  const handleTouchStart = (e, index, shape) => {
-    e.preventDefault();
-    setDraggingShape({ index, shape });
-  };
+  // Cleanup the touching class when touch ends
+  useEffect(() => {
+    const cleanupTouching = () => {
+      document.body.classList.remove('touching');
+    };
+    
+    window.addEventListener('touchend', cleanupTouching);
+    window.addEventListener('touchcancel', cleanupTouching);
+    
+    return () => {
+      window.removeEventListener('touchend', cleanupTouching);
+      window.removeEventListener('touchcancel', cleanupTouching);
+    };
+  }, []);
+
+  // Removed duplicate handleTouchStart declaration
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -597,9 +708,6 @@ const App = () => {
             onDragLeave={handleDragLeave}
             previewShape={draggingShape && draggingShape.shape}
             previewPos={previewPos}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
             isMobile={isMobile}
             onCellClick={handleCellClick} // Pass the cell click handler
             onMouseMove={handleGridMouseMove} // Pass the mouse move handler
@@ -607,6 +715,12 @@ const App = () => {
             cellColors={colorGrid} // Pass cell colors for the grid
           />
         </div>
+        {/* Floating preview shape during touch drag */}
+        {isMobile && draggingShape && dragPosition && (
+          <div className="floating-drag-shape" style={{ position: 'fixed', left: dragPosition.x, top: dragPosition.y, transform: 'translate(-50%, -50%)', pointerEvents: 'none', zIndex: 1000 }}>
+            <Shape shape={draggingShape.shape} />
+          </div>
+        )}
       </div>
       {gameOver && (
         <GameOver 

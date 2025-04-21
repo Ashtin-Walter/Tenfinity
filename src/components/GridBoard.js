@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useRef, useEffect } from "react";
 import GridCell from "./GridCell";
 import PropTypes from "prop-types";
 
@@ -18,6 +18,20 @@ const GridBoard = ({
   selectedShape,
   cellColors
 }) => {
+  // Add touch tracking refs for better mobile interaction
+  const touchMoveThrottleRef = useRef(null);
+  const lastTouchRef = useRef(null);
+  const gridRef = useRef(null);
+  
+  // Clean up any lingering throttle timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (touchMoveThrottleRef.current) {
+        clearTimeout(touchMoveThrottleRef.current);
+      }
+    };
+  }, []);
+
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
     onDragOver(e); // delegate to parent's handler to update preview position
@@ -44,6 +58,111 @@ const GridBoard = ({
       onMouseMove(e);
     }
   }, [onMouseMove]);
+
+  // Enhanced touch handlers for mobile
+  const handleTouchStartOptimized = useCallback((e) => {
+    // Only store the touch position and forward the event
+    if (e.touches && e.touches[0]) {
+      lastTouchRef.current = {
+        clientX: e.touches[0].clientX,
+        clientY: e.touches[0].clientY,
+        target: e.currentTarget,
+        timestamp: Date.now()
+      };
+    }
+    
+    // Call the parent handler
+    if (onTouchStart) {
+      onTouchStart(e);
+    }
+  }, [onTouchStart]);
+
+  const handleTouchMoveOptimized = useCallback((e) => {
+    // Prevent default to avoid scrolling while dragging
+    if (previewShape) {
+      e.preventDefault();
+    }
+
+    // Update last touch coordinates
+    if (e.touches && e.touches[0]) {
+      lastTouchRef.current = {
+        clientX: e.touches[0].clientX,
+        clientY: e.touches[0].clientY,
+        timestamp: Date.now()
+      };
+    }
+
+    // Map touch move to dragOver for preview on mobile
+    if (e.touches && e.touches[0]) {
+      const touch = e.touches[0];
+      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (el) {
+        const cellContainer = el.closest('.grid-cell-container');
+        if (cellContainer) {
+          // Simulate dragOver on this cell
+          handleDragOver({ currentTarget: cellContainer, preventDefault: () => {} });
+        } else {
+          // left the board
+          onDragLeave && onDragLeave(e);
+        }
+      }
+    }
+
+    // Forward to parent touch move handler
+    if (onTouchMove) {
+      onTouchMove(e);
+    }
+
+    // Throttle logic removed - handled in App.js
+  }, [previewShape, handleDragOver, onDragLeave, onTouchMove]);
+
+  const handleTouchEndOptimized = useCallback((e) => {
+    // Clear any throttle timeouts
+    if (touchMoveThrottleRef.current) {
+      clearTimeout(touchMoveThrottleRef.current);
+      touchMoveThrottleRef.current = null;
+    }
+    
+    // If we have the last touch position, use elementFromPoint to find the target
+    if (lastTouchRef.current && lastTouchRef.current.clientX) {
+      const targetElement = document.elementFromPoint(
+        lastTouchRef.current.clientX,
+        lastTouchRef.current.clientY
+      );
+      
+      // If we found a cell, get its row and column
+      if (targetElement) {
+        const cellContainer = targetElement.closest('.grid-cell-container');
+        if (cellContainer && cellContainer.dataset.row !== undefined) {
+          
+          
+          // Create a synthetic event with the correct target
+          const syntheticEvent = {
+            ...e,
+            currentTarget: cellContainer,
+            target: cellContainer
+          };
+          
+          // Call the parent handler with our synthetic event
+          if (onTouchEnd) {
+            onTouchEnd(syntheticEvent);
+          }
+          
+          // Reset the last touch
+          lastTouchRef.current = null;
+          return;
+        }
+      }
+    }
+    
+    // Fallback to normal handling if we couldn't determine the target
+    if (onTouchEnd) {
+      onTouchEnd(e);
+    }
+    
+    // Reset the last touch
+    lastTouchRef.current = null;
+  }, [onTouchEnd]);
 
   // Get shape color for preview
   const previewColor = useMemo(() => {
@@ -88,9 +207,10 @@ const GridBoard = ({
             onDragOver={!isMobile ? handleDragOver : undefined}
             onDragLeave={!isMobile ? onDragLeave : undefined}
             onDrop={!isMobile ? (e) => handleDrop(e, rowIndex, cellIndex) : undefined}
-            onTouchStart={isMobile ? onTouchStart : undefined}
-            onTouchMove={isMobile ? onTouchMove : undefined}
-            onTouchEnd={isMobile ? onTouchEnd : undefined}
+            onTouchStart={isMobile ? handleTouchStartOptimized : undefined}
+            onTouchMove={isMobile ? handleTouchMoveOptimized : undefined}
+            onTouchEnd={isMobile ? handleTouchEndOptimized : undefined}
+            onTouchCancel={isMobile ? handleTouchEndOptimized : undefined}
             onClick={() => handleCellClick(rowIndex, cellIndex)}
             role="gridcell"
             aria-label={ariaLabel}
@@ -114,9 +234,9 @@ const GridBoard = ({
     onDragLeave, 
     handleDrop, 
     isMobile, 
-    onTouchStart, 
-    onTouchMove, 
-    onTouchEnd, 
+    handleTouchStartOptimized, 
+    handleTouchMoveOptimized, 
+    handleTouchEndOptimized, 
     handleCellClick, 
     selectedShape, 
     cellColors,
@@ -125,12 +245,13 @@ const GridBoard = ({
 
   return (
     <div 
-      className={`grid-board ${selectedShape ? 'shape-selected' : ''}`}
+      className={`grid-board ${selectedShape ? 'shape-selected' : ''} ${isMobile ? 'mobile-grid' : ''}`}
       role="grid" 
       aria-label="Game grid board"
       aria-rowcount={grid.length}
       aria-colcount={grid[0].length}
       onMouseMove={handleMouseMove}
+      ref={gridRef}
     >
       {renderedGrid}
     </div>
