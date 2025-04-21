@@ -33,14 +33,18 @@ export const SHAPES = {
   // No need to duplicate the shapes as we'll access them dynamically
 };
 
-// Get all shapes from all difficulty levels combined
-const getAllShapes = () => {
-  const allShapes = [];
-  Object.keys(SHAPES).forEach(difficulty => {
-    allShapes.push(...SHAPES[difficulty]);
-  });
-  return allShapes;
+// Precompute combined shapes and utility shuffle function
+export const ALL_SHAPES = Object.values(SHAPES).flat();
+const shuffleArray = (array) => {
+  const a = array.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 };
+
+// Removed unused getAllShapes
 
 // LRU (Least Recently Used) Cache for rotation operations
 class LRUCache {
@@ -78,10 +82,11 @@ class LRUCache {
 
 const rotationCache = new LRUCache(100);
 
+// Refined cache key using shape name and normalized rotation
 const getCacheKey = (shape, times) => {
-  // Using a more efficient cache key generation
-  const pattern = JSON.stringify(shape.pattern || shape);
-  return `${pattern}_${times % 4}`;
+  const keyBase = shape.name || JSON.stringify(shape.pattern || shape);
+  const normalized = times % 4;
+  return `${keyBase}_rot${normalized}`;
 };
 
 // Efficiently rotate a shape with a single-pass algorithm
@@ -144,51 +149,29 @@ export const rotateShape = (shape, times = 1) => {
     : rotated;
 };
 
-export const getRandomShape = (difficulty = 'normal') => {
-  const shapesForDifficulty = difficulty === 'extreme' ? getAllShapes() : SHAPES[difficulty] || SHAPES.normal;
-  const randomIndex = Math.floor(Math.random() * shapesForDifficulty.length);
-  const shape = shapesForDifficulty[randomIndex];
-  
-  // Apply random rotation (0, 90, 180, or 270 degrees)
-  const rotations = Math.floor(Math.random() * 4);
-  return rotateShape(shape, rotations);
-};
+// Simplify getRandomShape to use balanced selection
+export const getRandomShape = (difficulty = 'normal') =>
+  getBalancedShapes(1, difficulty)[0];
 
-// Balance shape distribution for better gameplay
+// Utility to generate random hex color per shape
+const generateRandomColor = () => `#${Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')}`;
+
+// Efficient balanced shapes using shuffle
 export const getBalancedShapes = (count, difficulty = 'normal', previousShapes = []) => {
-  const shapesForDifficulty = difficulty === 'extreme' ? getAllShapes() : SHAPES[difficulty] || SHAPES.normal;
-  const result = [];
-  
-  // Keep track of shape types to ensure variety
-  const usedShapeTypes = new Set(
-    previousShapes
-      .filter(s => s && s.name)
-      .map(s => s.name)
-  );
-  
-  for (let i = 0; i < count; i++) {
-    // Try to get shapes that weren't used recently
-    let attempts = 0;
-    let shape;
-    
-    do {
-      const randomIndex = Math.floor(Math.random() * shapesForDifficulty.length);
-      shape = { ...shapesForDifficulty[randomIndex] };
-      attempts++;
-      
-      // Apply random rotation (0, 90, 180, or 270 degrees)
+  const shapesForDifficulty =
+    difficulty === 'extreme' ? ALL_SHAPES : SHAPES[difficulty] || SHAPES.normal;
+  const prevNames = previousShapes.filter(s => s && s.name).map(s => s.name);
+  const available = shapesForDifficulty.filter(s => !prevNames.includes(s.name));
+  const pool = available.length >= count ? available : shapesForDifficulty;
+
+  return shuffleArray(pool)
+    .slice(0, count)
+    .map(shape => {
+      // Assign a unique random color for each generated shape
+      const s = { ...shape, color: generateRandomColor() };
       const rotations = Math.floor(Math.random() * 4);
-      shape = rotateShape(shape, rotations);
-      
-      // After a few attempts, just take any shape
-      if (attempts > 5) break;
-    } while (usedShapeTypes.has(shape.name) && attempts < 5);
-    
-    usedShapeTypes.add(shape.name);
-    result.push(shape);
-  }
-  
-  return result;
+      return rotateShape(s, rotations);
+    });
 };
 
 // Utility function to trim empty rows and columns around a shape

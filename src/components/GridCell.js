@@ -6,9 +6,10 @@ const GridCell = React.memo(({ filled, preview, color }) => {
     <div 
       className={`grid-cell ${filled ? 'filled' : ''} ${preview ? 'preview' : ''}`}
       style={{
-        backgroundColor: filled && color ? color : undefined,
+        // Keep shape color for both preview and placed cells
+        backgroundColor: (filled || preview) && color ? color : undefined,
         borderColor: preview && color ? color : undefined,
-        boxShadow: filled && color ? `0 0 15px ${color}` : undefined
+        boxShadow: preview && color ? `0 0 15px ${color}` : undefined
       }}
     ></div>
   );
