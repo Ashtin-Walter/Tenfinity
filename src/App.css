@@ -2572,6 +2572,34 @@ body.touching .shape-preview .shape {
   }
 }
 
+/* Consolidated mobile grid override to ensure 10x10 cells fit viewport */
+@media (max-width: 768px) {
+  :root {
+    --cell-size-mobile: calc((100vw - (var(--grid-gap) * 9)) / 10);
+  }
+  .grid-board-container {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    padding: 0 !important;
+    aspect-ratio: 1 !important;
+    margin: 0 auto !important;
+  }
+  .grid-board {
+    display: grid !important;
+    width: 100% !important;
+    height: auto !important;
+    grid-template-columns: repeat(10, var(--cell-size-mobile)) !important;
+    grid-template-rows: repeat(10, var(--cell-size-mobile)) !important;
+    gap: var(--grid-gap) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .grid-cell {
+    width: var(--cell-size-mobile) !important;
+    height: var(--cell-size-mobile) !important;
+  }
+}
+
 /* Consolidated mobile grid override */
 @media (max-width: 768px) {
   .game-container { overflow-x: hidden; }
@@ -2839,4 +2867,44 @@ body.touching .shape-preview .shape {
 
   /* Hide duplicated or conflicting overrides */
   /* Removed multiple .pulse, .fadeIn, .settings-menu, .gear-icon re-definitions */
+}
+
+/* Consolidated mobile styles */
+@media (max-width: 768px) {
+  :root { --cell-size: var(--cell-size-mobile); --cell-size-mobile: calc((100vw - (var(--grid-gap)*9)) / 10); }
+  .App { padding: var(--game-padding); height: auto; min-height: auto; border-radius: 16px; }
+  .app-header { padding: 0.5rem 1rem; margin-bottom: 0.5rem; height: auto; }
+  .app-header h1 { font-size: clamp(1.5rem, 5vw, 2rem); }
+  .game-container { display: flex; flex-direction: column; gap: 0.75rem; margin: 0; padding: 0; width: 100%; }
+  .grid-board-container { width: 95%; padding: 0; margin: 0 auto; aspect-ratio: 1; max-width: 90vw; }
+  .grid-board { display: grid; grid-template-columns: repeat(10, var(--cell-size-mobile)); grid-template-rows: repeat(10, var(--cell-size-mobile)); gap: var(--grid-gap); padding: var(--grid-gap); }
+  .grid-cell { width: var(--cell-size-mobile); height: var(--cell-size-mobile); }
+  .shape-cell { width: calc(var(--shape-cell-size) * 1.2); height: calc(var(--shape-cell-size) * 1.2); }
+  .shape-preview, .menu-btn, .gear-icon, .close-btn { min-width: 44px; min-height: 44px; }
+}
+
+/* iPhone 11 specific optimizations (max-width: 414px) */
+@media (max-width: 414px) {
+  .grid-board-container { width: 100vw; padding: 0; margin: 0; }
+  .grid-board { grid-template-columns: repeat(10, var(--cell-size-mobile)); grid-template-rows: repeat(10, var(--cell-size-mobile)); padding: 2px; gap: 2px; }
+  .grid-cell { border-radius: 0; }
+  .shape-preview:hover { transform: none; box-shadow: none; }
+  .shape-preview:active { transform: scale(1.05); }
+}
+
+/* Keyframes consolidated */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.7; transform: scale(0.98); }
+  100% { opacity: 1; transform: scale(1.02); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
