@@ -95,9 +95,9 @@ const SettingsMenu = ({
   
   return (
     <>
-      <div className="settings-backdrop" aria-hidden="true" onClick={onClose}></div>
+      <div className="settings-backdrop visible" aria-hidden="true" onClick={onClose}></div>
       <div 
-        className="settings-menu"
+        className="settings-menu visible" // Ensure .visible is applied when isOpen is true
         ref={menuRef}
         role="dialog"
         aria-label="Game settings"
@@ -110,11 +110,13 @@ const SettingsMenu = ({
             onClick={onClose}
             aria-label="Close settings"
           >
-            ✕
+            {/* Using a more common close icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+              <path d="M18.3 5.71a.996.996 0 00-1.41 0L12 10.59 7.11 5.7A.996.996 0 105.7 7.11L10.59 12l-4.89 4.89a.996.996 0 101.41 1.41L12 13.41l4.89 4.89a.996.996 0 101.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z" />
+            </svg>
           </button>
         </div>
         
-        {/* Tab Navigation */}
         <div className="settings-tabs">
           {sections.map(section => (
             <button
@@ -124,7 +126,7 @@ const SettingsMenu = ({
               aria-selected={activeSection === section.id}
               role="tab"
             >
-              <span className="tab-icon">{section.icon}</span>
+              <span className="tab-icon" aria-hidden="true">{section.icon}</span>
               <span className="tab-label">{section.label}</span>
             </button>
           ))}
@@ -135,53 +137,42 @@ const SettingsMenu = ({
           <div 
             className={`settings-panel ${activeSection === 'game' ? 'active' : ''}`}
             role="tabpanel"
-            aria-labelledby="game-tab"
+            aria-labelledby="game-tab" // Should match tab id if used
           >
             <div className="panel-group">
+              <h3 className="panel-group-title">Game Actions</h3>
               <button className="menu-btn primary-btn" onClick={onRestart}>
-                <span className="btn-icon">🔄</span> Restart Game
+                <span className="btn-icon" aria-hidden="true">🔄</span> Restart Game
               </button>
             </div>
             
             <div className="panel-group">
-              <h4 className="option-title">Difficulty Level</h4>
+              <h3 className="panel-group-title">Difficulty Level</h3>
               <div className="difficulty-buttons">
-                <button 
-                  className={`menu-btn option-btn ${difficulty === 'easy' ? 'active' : ''}`} 
-                  onClick={() => onChangeDifficulty('easy')}
-                  aria-pressed={difficulty === 'easy'}
-                >
-                  <span className="difficulty-icon">😊</span>
-                  <span className="btn-label">Easy</span>
-                </button>
-                <button 
-                  className={`menu-btn option-btn ${difficulty === 'normal' ? 'active' : ''}`} 
-                  onClick={() => onChangeDifficulty('normal')}
-                  aria-pressed={difficulty === 'normal'}
-                >
-                  <span className="difficulty-icon">😎</span>
-                  <span className="btn-label">Normal</span>
-                </button>
-                <button 
-                  className={`menu-btn option-btn ${difficulty === 'hard' ? 'active' : ''}`} 
-                  onClick={() => onChangeDifficulty('hard')}
-                  aria-pressed={difficulty === 'hard'}
-                >
-                  <span className="difficulty-icon">🤯</span>
-                  <span className="btn-label">Hard</span>
-                </button>
+                {['easy', 'normal', 'hard'].map(level => (
+                  <button 
+                    key={level}
+                    className={`menu-btn option-btn ${difficulty === level ? 'active' : ''}`} 
+                    onClick={() => onChangeDifficulty(level)}
+                    aria-pressed={difficulty === level}
+                  >
+                    <span className="difficulty-icon" aria-hidden="true">
+                      {level === 'easy' ? '😊' : level === 'normal' ? '😎' : '🤯'}
+                    </span>
+                    <span className="btn-label">{level.charAt(0).toUpperCase() + level.slice(1)}</span>
+                  </button>
+                ))}
               </div>
               
               <div className="base-difficulty-container">
-                <span className="option-title difficulty-separator">OR</span>
                 <button 
                   className={`menu-btn base-difficulty-btn ${difficulty === 'extreme' ? 'active' : ''}`} 
                   onClick={() => onChangeDifficulty('extreme')}
                   aria-pressed={difficulty === 'extreme'}
                 >
-                  <span className="difficulty-icon">☠️</span>
-                  <span className="btn-label">BASE MODE - All Shapes</span>
-                  <span className="btn-description">Play with all shapes randomly mixed together</span>
+                  <span className="difficulty-icon" aria-hidden="true">☠️</span>
+                  <span className="btn-label">Extreme Mode</span>
+                  <span className="btn-description">All shapes, maximum challenge!</span>
                 </button>
               </div>
             </div>
@@ -194,56 +185,41 @@ const SettingsMenu = ({
             aria-labelledby="appearance-tab"
           >
             <div className="panel-group">
+              <h3 className="panel-group-title">Display Mode</h3>
               <div className="mode-switch">
                 <button 
-                  className={`mode-option ${!darkMode ? 'active' : ''}`}
+                  className={`mode-option light-mode ${!darkMode ? 'active' : ''}`}
                   onClick={() => darkMode && onToggleDarkMode()}
                   aria-pressed={!darkMode}
                 >
-                  <span className="mode-icon">☀️</span>
+                  <span className="mode-icon" aria-hidden="true">☀️</span>
                   <span className="mode-label">Light</span>
                 </button>
-                <div className="mode-toggle">
-                  <input 
-                    type="checkbox" 
-                    id="dark-mode-toggle" 
-                    className="toggle-checkbox" 
-                    checked={darkMode}
-                    onChange={onToggleDarkMode}
-                    aria-label="Toggle dark mode"
-                  />
-                  <label htmlFor="dark-mode-toggle" className="toggle-switch"></label>
-                </div>
                 <button 
-                  className={`mode-option ${darkMode ? 'active' : ''}`}
+                  className={`mode-option dark-mode-btn ${darkMode ? 'active' : ''}`}
                   onClick={() => !darkMode && onToggleDarkMode()}
                   aria-pressed={darkMode}
                 >
-                  <span className="mode-icon">🌙</span>
+                  <span className="mode-icon" aria-hidden="true">🌙</span>
                   <span className="mode-label">Dark</span>
                 </button>
               </div>
             </div>
             
             <div className="panel-group">
-              <h4 className="option-title">Color Theme</h4>
+              <h3 className="panel-group-title">Color Theme</h3>
               <div className="theme-selector">
-                <button 
-                  className={`theme-option ${theme === 'default' ? 'active' : ''}`}
-                  onClick={() => onChangeTheme('default')}
-                  aria-pressed={theme === 'default'}
-                >
-                  <div className="theme-preview default-theme"></div>
-                  <span className="theme-name">Default</span>
-                </button>
-                <button 
-                  className={`theme-option ${theme === 'modern' ? 'active' : ''}`}
-                  onClick={() => onChangeTheme('modern')}
-                  aria-pressed={theme === 'modern'}
-                >
-                  <div className="theme-preview modern-theme"></div>
-                  <span className="theme-name">Modern</span>
-                </button>
+                {['default', 'modern', 'neon'].map(themeId => ( // Added 'neon'
+                  <button 
+                    key={themeId}
+                    className={`theme-option ${theme === themeId ? 'active' : ''}`}
+                    onClick={() => onChangeTheme(themeId)}
+                    aria-pressed={theme === themeId}
+                  >
+                    <div className={`theme-preview ${themeId}-theme-preview`}></div>
+                    <span className="theme-name">{themeId.charAt(0).toUpperCase() + themeId.slice(1)}</span>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -255,16 +231,17 @@ const SettingsMenu = ({
             aria-labelledby="save-tab"
           >
             <div className="panel-group save-load-options">
+              <h3 className="panel-group-title">Game Data</h3>
               <button className="menu-btn save-btn" onClick={onSaveGame}>
-                <span className="btn-icon">💾</span> Save Game
+                <span className="btn-icon" aria-hidden="true">💾</span> Save Progress
               </button>
               <button className="menu-btn load-btn" onClick={onLoadGame}>
-                <span className="btn-icon">📂</span> Load Game
+                <span className="btn-icon" aria-hidden="true">📂</span> Load Progress
               </button>
             </div>
             <div className="auto-save-info">
               <p className="info-text">
-                Your game progress is automatically saved when you close the window or refresh the page.
+                Your game progress is also automatically saved locally.
               </p>
             </div>
           </div>
@@ -276,23 +253,17 @@ const SettingsMenu = ({
             aria-labelledby="help-tab"
           >
             <div className="panel-group help-options">
+              <h3 className="panel-group-title">Support</h3>
               <button className="menu-btn tutorial-btn" onClick={onOpenTutorial}>
-                <span className="btn-icon">📖</span> How to Play
+                <span className="btn-icon" aria-hidden="true">📖</span> How to Play
               </button>
               <div className="keyboard-shortcuts">
-                <h4 className="option-title">Keyboard Shortcuts</h4>
-                <div className="shortcut-item">
-                  <span className="shortcut-key">R</span>
-                  <span className="shortcut-desc">Restart Game</span>
-                </div>
-                <div className="shortcut-item">
-                  <span className="shortcut-key">H</span>
-                  <span className="shortcut-desc">Open Help</span>
-                </div>
-                <div className="shortcut-item">
-                  <span className="shortcut-key">Esc</span>
-                  <span className="shortcut-desc">Close Dialogs</span>
-                </div>
+                <h4 className="shortcuts-title">Keyboard Shortcuts</h4>
+                <ul className="shortcuts-list">
+                  <li><kbd>R</kbd> - Restart Game</li>
+                  <li><kbd>H</kbd> - Show Help / Tutorial</li>
+                  <li><kbd>Esc</kbd> - Close Modals</li>
+                </ul>
               </div>
             </div>
           </div>

@@ -173,7 +173,6 @@ const GridBoard = ({
   const shapePattern = useMemo(() => {
     return previewShape ? (previewShape.pattern || previewShape) : null;
   }, [previewShape]);
-
   // Use useMemo to optimize the grid rendering
   const renderedGrid = useMemo(() => {
     return grid.map((row, rowIndex) => 
@@ -195,8 +194,15 @@ const GridBoard = ({
           }
         }
         
+        // Use enhanced canPlace validation from App.js if available, fallback to simple collision check
+        const canPlaceAtPosition = previewPos && typeof previewPos.canPlace === 'boolean' 
+          ? previewPos.canPlace 
+          : !cell; // Fallback: can place if cell is empty
+          
+        const isInvalidCell = showPreview && !canPlaceAtPosition;
+        
         // Create a proper ARIA label for accessibility
-        const ariaLabel = `Grid cell at row ${rowIndex + 1}, column ${cellIndex + 1}${cell ? ', filled' : ''}${showPreview ? ', preview' : ''}`;
+        const ariaLabel = `Grid cell at row ${rowIndex + 1}, column ${cellIndex + 1}${cell ? ', filled' : ''}${showPreview ? ', preview' : ''}${isInvalidCell ? ', invalid' : ''}`;
         
         return (
           <div
@@ -216,11 +222,13 @@ const GridBoard = ({
             aria-label={ariaLabel}
             aria-colindex={cellIndex + 1}
             aria-rowindex={rowIndex + 1}
-          >
-            <GridCell 
-              filled={cell} 
-              preview={showPreview} 
-              color={showPreview ? previewColor : cellColor}
+          >            <GridCell 
+              filled={cell}
+              preview={showPreview && canPlaceAtPosition}
+              invalid={isInvalidCell}
+              canPlace={canPlaceAtPosition}
+              color={isInvalidCell ? undefined : (showPreview ? previewColor : cellColor)}
+              mobile={isMobile} // know mobile to offset preview
             />
           </div>
         );
@@ -243,6 +251,12 @@ const GridBoard = ({
     previewColor
   ]);
 
+  const handleBoardClick = useCallback((e) => {
+    if (selectedShape && previewPos && previewPos.canPlace) {
+      onCellClick(previewPos.row, previewPos.col);
+    }
+  }, [selectedShape, previewPos, onCellClick]);
+
   return (
     <div 
       className={`grid-board ${selectedShape ? 'shape-selected' : ''} ${isMobile ? 'mobile-grid' : ''}`}
@@ -251,6 +265,7 @@ const GridBoard = ({
       aria-rowcount={grid.length}
       aria-colcount={grid[0].length}
       onMouseMove={handleMouseMove}
+      onClick={!isMobile ? handleBoardClick : undefined}
       ref={gridRef}
     >
       {renderedGrid}
@@ -272,7 +287,8 @@ GridBoard.propTypes = {
   ]),
   previewPos: PropTypes.shape({
     row: PropTypes.number,
-    col: PropTypes.number
+    col: PropTypes.number,
+    canPlace: PropTypes.bool,
   }),
   isMobile: PropTypes.bool,
   onTouchStart: PropTypes.func,

@@ -1,24 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 const GameOver = ({ onRestart, finalScore, highScore }) => {
   const isNewHighScore = finalScore > highScore;
-  const [animationComplete, setAnimationComplete] = useState(false);
-  
-  // Add animation sequence when component mounts
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setAnimationComplete(true);
-    }, 600);
-    
-    return () => clearTimeout(timer);
-  }, []);
 
   // Calculate stats to display
   const percentOfHigh = highScore > 0 ? Math.round((finalScore / highScore) * 100) : 100;
   
   return (
-    <div className={`game-over-overlay ${animationComplete ? 'fully-visible' : ''}`}>
+    <div className="game-over-overlay"> 
       <div className="game-over-modal">
         <h2>Game Over</h2>
         

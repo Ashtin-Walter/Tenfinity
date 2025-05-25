@@ -56,20 +56,18 @@ body {
   overflow-x: hidden;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start; /* Align App to the top for desktop */
 }
 
 .App {
   text-align: center;
   max-width: var(--max-game-width);
   min-width: var(--min-game-width);
-  margin: 0 auto;
+  margin: 20px auto; /* Add some margin for desktop view */
   padding: var(--game-padding);
-  height: auto;
-  min-height: 100vh;
+  min-height: calc(100vh - 40px); /* Adjust min-height for desktop */
   display: flex;
   flex-direction: column;
-  grid-template-rows: none;
   gap: 1rem;
   overflow-x: hidden;
   background-color: var(--card-bg);
@@ -81,25 +79,28 @@ body {
 /* New header styling for a sleek look */
 .app-header {
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  /* For mobile: Logo, Title, Settings. Score is handled by mobile-score-display */
+  grid-template-columns: auto 1fr auto; 
   align-items: center;
-  gap: 1rem;
-  padding: 1rem 2rem;
+  gap: 0.5rem; 
+  padding: 0.75rem 1rem; 
   border-bottom: 2px solid var(--accent-color);
-  margin-bottom: 20px;
-  height: var(--header-height);
+  margin-bottom: 1rem; 
+  height: auto; 
+  min-height: var(--header-height);
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  margin-top: 1rem;
+  border-radius: 12px; 
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+  margin-top: 0.5rem; 
 }
 
 .app-header h1 {
-  font-size: clamp(2rem, 5vw, 3rem);
+  font-size: clamp(1.8rem, 4vw, 2.5rem); 
   margin: 0;
-  text-align: center;
-  font-weight: 800;
+  text-align: left; 
+  grid-column: 2; /* Title in the middle for mobile */
+  font-weight: 700; 
   background: linear-gradient(135deg, var(--accent-color), var(--tertiary-color));
   -webkit-background-clip: text;
   background-clip: text;
@@ -108,10 +109,69 @@ body {
   letter-spacing: -0.03em;
 }
 
+.loader-logo {
+  width: 30px; 
+  height: 30px; 
+  background-color: var(--accent-color);
+  margin: 0 0.5rem; 
+  position: relative;
+  grid-column: 1; /* Logo first */
+  justify-self: start; 
+}
+
+.gear-icon {
+  grid-column: 3; /* Settings icon last on mobile */
+  justify-self: end;
+  font-size: 1.8rem; /* Ensure tappable */
+  padding: 0.4rem;
+  background: transparent;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.dark-mode .gear-icon {
+  color: var(--dark-text);
+}
+.gear-icon:hover {
+  background-color: rgba(0,0,0,0.05);
+}
+.dark-mode .gear-icon:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+
+
 .header-score {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 1rem;
+  justify-content: flex-end;
+  background: linear-gradient(135deg, var(--accent-color), var(--tertiary-color));
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.header-score .score-board {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 0.2rem;
+}
+
+.header-score .score-board span {
+  font-size: 1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.dark-mode .header-score .score-board {
+  /* Ensure dark mode score board in header is consistent */
+  background: transparent;
+  border-color: transparent;
 }
 
 .header-score .score-board {
@@ -122,13 +182,12 @@ body {
 }
 
 .loader-logo {
-  width: 40px;
-  height: 40px;
+  width: 30px; /* Smaller for mobile */
+  height: 30px; /* Smaller for mobile */
   background-color: var(--accent-color);
-  margin: 0 1rem;
+  margin: 0 0.5rem; /* Adjusted margin */
   position: relative;
-  /* Remove the always-on animation */
-  /* animation: squareLoader 1.5s infinite; */
+  justify-self: center; /* Center in its grid cell */
 }
 
 /* Our new animation that only plays when a line is cleared */
@@ -145,22 +204,22 @@ body {
   }
   20% {
     transform: scale(1.5) rotate(90deg);
-    background-color: #ffcc00;
+    background-color: #ffcc00; /* Gold */
     box-shadow: 0 0 25px #ffcc00, 0 0 40px var(--accent-color);
   }
   40% {
     transform: scale(1.2) rotate(180deg);
-    background-color: #ff6b6b;
+    background-color: #ff6b6b; /* Reddish */
     box-shadow: 0 0 20px #ff6b6b;
   }
   60% {
     transform: scale(1.8) rotate(270deg);
-    background-color: #4ade80;
+    background-color: #4ade80; /* Greenish */
     box-shadow: 0 0 30px #4ade80, 0 0 50px var(--accent-color);
   }
   80% {
     transform: scale(1.4) rotate(360deg);
-    background-color: #a78bfa;
+    background-color: #a78bfa; /* Purplish */
     box-shadow: 0 0 25px #a78bfa;
   }
   100% {
@@ -168,6 +227,45 @@ body {
     background-color: var(--accent-color);
     box-shadow: 0 0 5px var(--accent-color);
   }
+}
+
+/* Animation for when a cell is part of a cleared line - initial highlight */
+@keyframes cellClearedEffect {
+  0% {
+    box-shadow: 0 0 8px 2px rgba(255, 215, 0, 0.7); /* Gold glow */
+    transform: scale(1.05);
+  }
+  50% {
+    box-shadow: 0 0 15px 5px rgba(255, 215, 0, 1);
+    transform: scale(1.1);
+  }
+  100% {
+    box-shadow: 0 0 8px 2px rgba(255, 215, 0, 0.7);
+    transform: scale(1.05);
+  }
+}
+
+.cell-cleared {
+  animation: cellClearedEffect 0.3s ease-in-out;
+  /* z-index might be needed if issues with overlap, but start without */
+  /* background-color: yellow; */ /* Example, if animation doesn't cover it */
+}
+
+/* Animation for cell disappearing */
+@keyframes cellDisappearEffect {
+  from {
+    transform: scale(1.05); /* Start from where cell-cleared might leave it */
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+}
+
+.cell-disappear {
+  animation: cellDisappearEffect 0.5s ease-out forwards;
+  animation-delay: 0.1s; /* Start slightly after cell-cleared begins */
 }
 
 /* Add border-box sizing to grid board and container */
@@ -180,10 +278,10 @@ body {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   grid-template-rows: repeat(10, 1fr);
-  gap: 4px;
+  gap: clamp(2px, 0.8vw, 3px); /* Slightly reduced gap */
   background: transparent;
-  padding: 12px;
-  border-radius: 20px;
+  padding: clamp(8px, 2vw, 10px); /* Adjusted padding */
+  border-radius: 15px; /* Adjusted radius */
   width: 100%;
   height: 100%;
   aspect-ratio: 1;
@@ -241,6 +339,43 @@ body {
   z-index: 5;
   position: relative;
   transform: scale(1); /* Ensure scaling effect works properly */
+}
+
+/* Enhanced preview states for better user feedback */
+.grid-cell.preview.invalid {
+  background-color: rgba(255, 82, 82, 0.3);
+  outline: 3px dashed #ff5252;
+  box-shadow: 0 0 20px rgba(255, 82, 82, 0.5);
+  animation: shakeInvalid 0.5s ease-in-out;
+}
+
+.grid-cell.preview.invalid::before {
+  border-color: #ff5252;
+  opacity: 0.8;
+}
+
+@keyframes shakeInvalid {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+/* Valid preview enhancement */
+.grid-cell.preview.valid {
+  background-color: rgba(76, 175, 80, 0.3);
+  outline: 3px dashed #4caf50;
+  box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+  animation: pulseValid 1s infinite alternate;
+}
+
+.grid-cell.preview.valid::before {
+  border-color: #4caf50;
+  opacity: 0.6;
+}
+
+@keyframes pulseValid {
+  0% { opacity: 0.8; transform: scale(0.98); }
+  100% { opacity: 1; transform: scale(1.02); }
 }
 
 @keyframes pulse {
@@ -321,20 +456,19 @@ body {
 /* Enhance the game container for a more centered layout */
 .game-container {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 2rem;
+  grid-template-columns: 1fr; /* Default to single column for mobile */
+  grid-template-rows: auto auto 1fr; /* Shapes, Score, Grid */
+  gap: 1rem; /* Reduced gap for mobile */
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 0.5rem;
-  align-items: center;
+  align-items: stretch; /* Stretch items to fill width */
   justify-content: center;
-  min-height: 70vh;
-  place-items: center;
-  box-sizing: border-box;
+  min-height: 0; /* Allow flex to control height */
   flex: 1;
-  overflow: auto;
-
+  overflow-y: auto; /* Allow vertical scroll if content overflows */
+  overflow-x: hidden;
 }
 .game-container::-webkit-scrollbar {
   display: none;
@@ -343,12 +477,14 @@ body {
 .grid-board-container {
   width: 100%;
   aspect-ratio: 1;
-  max-width: min(85vh, 900px);
+  max-width: min(90vw, 700px); /* Increased mobile grid size from 85vw/600px to 90vw/700px */
   display: flex;
   justify-content: center;
   align-items: center;
   margin: 0 auto;
   position: relative;
+  grid-row: 3; /* Grid is the last element in mobile layout */
+  padding: 15px; /* Increased padding for mobile */
 }
 
 .grid-board-container::before {
@@ -362,37 +498,64 @@ body {
 }
 
 .shapes-container {
-  min-width: 120px;
-  max-width: 200px;
-  margin-right: 1.5rem;
-  padding: 1.2rem;
+  min-width: auto; /* Allow to shrink */
+  width: 100%; /* Full width on mobile */
+  max-width: 100%; 
+  margin-right: 0; /* No margin on mobile */
+  padding: 0.75rem; /* Adjusted padding */
   background: rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
+  border-radius: 12px; /* Adjusted radius */
   backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
+  grid-row: 1; /* Shapes container at the top */
+  gap: 0.75rem; /* Space between shape previews and undo button */
 }
 
+.mobile-score-display {
+  grid-row: 2; /* Score display below shapes */
+  width: 100%;
+  padding: 0.5rem 0;
+}
+
+.mobile-score-display .score-board {
+  margin: 0 auto; /* Center the scoreboard */
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05); /* Subtle background */
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.dark-mode .mobile-score-display .score-board {
+  background: rgba(0,0,0,0.15);
+}
+
+
 .score-container {
-  display: none;
+  display: none; /* This seems unused, ensure it's hidden or repurposed */
 }
 
 .shape-previews {
   display: grid;
-  grid-template-rows: repeat(3, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: repeat(3, 1fr); /* Always 3 columns for shapes */
+  gap: 0.75rem; /* Adjusted gap */
   align-content: center;
   justify-items: center;
+  width: 100%; /* Take full width of shapes-container */
 }
 
 .shape-preview {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 0.8rem;
-  width: 100%;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border-radius: 10px; /* Adjusted radius */
+  padding: 0.5rem; /* Adjusted padding */
+  width: 100%; /* Make previews fill their grid cells */
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex; /* Center shape inside preview */
+  justify-content: center; /* Center shape inside preview */
+  align-items: center; /* Center shape inside preview */
+  min-height: 60px; /* Ensure a minimum tap area */
 }
 
 .shape-preview:hover {
@@ -420,7 +583,7 @@ body {
   height: var(--shape-cell-size);
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 4px;
+  border-radius: 3px; /* Slightly smaller radius */
   transition: all 0.3s var(--animation-timing);
   margin: 1px;
 }
@@ -434,47 +597,198 @@ body {
 }
 
 /* Mobile and tablet adjustments */
-@media (max-width: 1024px) {
-  .game-container {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto;
+/* Styles for tablets and larger phones (e.g., landscape mobile) */
+@media (min-width: 600px) {
+  .app-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 2rem;
   }
 
-  .grid-board-container {
+  .app-header h1 {
+    grid-column: 2;
+    text-align: center;
+    font-size: clamp(2rem, 4vw, 3rem);
+  }
+
+  .loader-logo {
     grid-column: 1;
-    grid-row: 2;
+    justify-self: start;
+    width: 50px;
+    height: 50px;
   }
 
+  .header-score {
+    grid-column: 3;
+    justify-self: end;
+    display: flex; /* Ensure the scoreboard is visible */
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .gear-icon {
+    grid-column: 4;
+    justify-self: end;
+    font-size: 1.5rem;
+  }  .game-container {
+    grid-template-columns: 200px 1fr; /* Shrink shapes pane, expand grid */
+    grid-template-rows: 1fr; /* Single row */
+    gap: 3rem; /* Increased gap further for larger desktop layout */
+    align-items: flex-start; 
+    padding: 2rem; /* Increased padding further */
+    max-width: 1600px; /* Increased max-width further to accommodate larger grid */
+    margin: 0 auto; /* Center game container */
+  }
   .shapes-container {
+    grid-row: 1; 
     grid-column: 1;
-    grid-row: 1;
+    width: auto; 
+    min-width: 200px; /* Adjusted min-width */
+    max-width: 200px; /* Shrink shape preview pane */
+    margin-right: 1rem;
+    padding: 1.5rem; /* Increased padding */
+  }  .grid-board-container {
+    grid-row: 1; 
+    grid-column: 2;
+    max-width: min(70vw, 1100px); /* Restore larger grid size */
+    padding: 20px; /* Ensure proper padding */
   }
-
-  .score-container {
-    grid-column: 1;
-    grid-row: 3;
+  .mobile-score-display {
+    display: none; /* Hide mobile score display on larger screens */
   }
-
   .shape-previews {
-    grid-template-rows: 1fr;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr; /* Stack shapes vertically in sidebar */
+    gap: 1rem;
+  }
+   .shape-preview {
+    min-height: 70px;
   }
 }
 
-/* Landscape mode optimizations */
-@media (max-height: 600px) and (orientation: landscape) {
+
+/* Landscape mode optimizations - refine existing one */
+@media (max-height: 600px) and (orientation: landscape) and (max-width: 1024px) { /* Added max-width to avoid conflict with large landscape */
+  .App {
+    padding: clamp(5px, 1vw, 15px); /* Reduce padding in landscape */
+  }
+  .app-header {
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+    min-height: 50px; /* Smaller header in landscape */
+  }
+  .app-header h1 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+  .loader-logo {
+    width: 25px;
+    height: 25px;
+  }
   .game-container {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto 1fr; /* Side-by-side layout */
+    grid-template-rows: 1fr; /* Ensure single row */
+    gap: 1rem;
     padding: 0.5rem;
+    align-items: center; /* Center items vertically in landscape */
   }
-
-  .grid-board {
-    max-height: 80vh;
+  .shapes-container {
+    grid-column: 1;
+    grid-row: 1;
+    max-width: 180px; /* Slimmer shapes container */
+    padding: 0.75rem;
+    margin-right: 0.5rem;
   }
-
   .shape-previews {
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(3, auto);
+    grid-template-columns: 1fr; /* Stack shapes vertically */
+    gap: 0.5rem;
+  }
+  .shape-preview {
+    padding: 0.4rem;
+    min-height: 50px;
+  }
+   .grid-board-container {
+    grid-column: 2;
+    grid-row: 1;
+    max-width: min(75vh, 450px); /* Adjust grid size for landscape */
+  }
+  .mobile-score-display {
+    display: none; /* Hide mobile score, header score should be visible if screen is wide enough */
+  }
+  .undo-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Specific styles for very small screens (e.g., iPhone SE, iPhone 11 portrait) */
+@media (max-width: 420px) {
+  :root {
+    --shape-cell-size: clamp(10px, 4vw, 15px); /* Smaller shape cells */
+  }
+  .App {
+    padding: clamp(5px, 2vw, 10px);
+    gap: 0.5rem;
+  }
+  .app-header {
+    padding: 0.5rem 0.75rem;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+    border-radius: 10px;
+  }
+  .app-header h1 {
+    font-size: clamp(1.5rem, 5vw, 1.8rem);
+  }
+  .loader-logo {
+    width: 25px;
+    height: 25px;
+    margin: 0 0.25rem;
+  }
+  .gear-icon {
+    font-size: 1.5rem; /* Ensure gear is tappable */
+    padding: 0.3rem;
+  }
+
+  .game-container {
+    gap: 0.75rem;
+    padding: 0.25rem;
+  }
+  .shapes-container {
+    padding: 0.5rem;
+    border-radius: 10px;
+    gap: 0.5rem;
+  }
+  .shape-previews {
+    gap: 0.5rem;
+  }
+  .shape-preview {
+    padding: 0.3rem;
+    border-radius: 8px;
+    min-height: 50px;
+  }
+  .grid-board-container {
+    max-width: min(92vw, 450px); /* Ensure it fits well */
+    padding: 2px;
+  }
+  .grid-board {
+    gap: clamp(1px, 0.5vw, 2px);
+    padding: clamp(5px, 1.5vw, 8px);
+    border-radius: 12px;
+  }
+  .mobile-score-display .score-board {
+    padding: 0.4rem;
+    border-radius: 6px;
+  }
+  .score-label {
+    font-size: 0.7rem;
+  }
+  .score-value {
+    font-size: 1.1rem;
+  }
+  .undo-btn {
+    padding: 0.5rem 0.8rem; /* Slightly larger tap area */
+    font-size: 0.85rem;
+    border-radius: 6px;
   }
 }
 
@@ -486,7 +800,6 @@ body {
   cursor: pointer;
   border-radius: 5px;
   transition: background-color 0.3s, box-shadow 0.3s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .restart-btn:hover {
@@ -525,13 +838,9 @@ body {
 }
 
 .dark-mode .settings-menu {
-  background: var(--dark-bg);
-  border-color: #333;
-}
-
-.dark-mode .menu-btn {
-  background: var(--dark-cell);
+  background: var(--dark-secondary); 
   color: var(--dark-text);
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 /* Enhanced Animations */
@@ -572,728 +881,469 @@ body {
   margin: 5px 0;
 }
 
-/* Shape.css */
-.shape {
-  display: inline-block;
-  cursor: grab;
-}
-
-.shape-row {
-  display: flex;
-}
-
-.shape-cell {
-  width: 20px;
-  height: 20px;
-  border: 1px solid #e0e0e0; /* lighter border for clean look */
-  background: #fff;
-  border-radius: 4px;        /* subtle rounded corners */
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.shape-cell.filled {
-  background-color: var(--accent-color); /* matches overall color scheme */
-  box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
-}
-
-/* ScoreBoard.css */
-.score-board {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 12px 18px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  margin: 10px 0;
-  background: transparent;
-  box-shadow: none;
-  border: none;
-}
-
-.dark-mode .score-board {
-  background: rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.05);
-}
-
-.score-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 12px;
-  position: relative;
-}
-
-.score-item:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  right: -5px;
-  top: 20%;
-  height: 60%;
-  width: 1px;
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.score-label {
-  font-size: 0.8rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  opacity: 0.8;
-  margin-bottom: 4px;
-  color: #fff;
-}
-
-.score-value {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-/* NextShapes.css */
-.next-shapes {
-  margin-top: 10px;
-}
-
-.shape-previews {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
-}
-
-.shape-preview {
-  margin-right: 10px; /* changed margin from bottom to right */
-}
-
-/* GridCell.css */
-.grid-cell {
-  border: 1px solid gray;  /* Add borders for better visibility */
-}
-
-.grid-cell.filled {
-  /* Allow inline shape color to show instead of default accent color */
-  transform: scale(0.95);
-  box-shadow: none;
-  border-color: transparent;
-  z-index: 2;
-}
-
-/* Modern Footer */
-.footer {
-  position: static;
-  width: 100%;
-  margin-top: auto;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
-  color: #ffffff;
-  text-align: center;
-  padding: 15px 0;
-  font-family: 'Inter', 'Segoe UI', sans-serif;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-  z-index: 50;
-}
-
-.footer a {
-  color: var(--tertiary-color);
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  position: relative;
-  padding: 0 2px;
-}
-
-.footer a::after {
-  content: '';
-  position: absolute;
-  width: 0;
-  height: 2px;
-  bottom: -2px;
-  left: 0;
-  background: var(--tertiary-color);
-  transition: width 0.3s ease;
-}
-
-.footer a:hover {
-  color: var(--accent-color);
-}
-
-.footer a:hover::after {
-  width: 100%;
-}
-
-.footer p {
-  margin: 0;
-  font-size: 0.9rem;
-  letter-spacing: 0.02em;
-}
-
-/* Game Over Overlay and Modal Styles */
-.game-over-overlay {
+/* Settings Menu Styles - ensure backdrop and menu also use .visible */
+.settings-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: rgba(0, 0, 0, 0.65); /* Slightly darker backdrop */
+  backdrop-filter: blur(4px); /* Increased blur */
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.4s ease;
-  z-index: 1000;
+  transition: opacity 0.3s ease-in-out;
+  z-index: 800; 
 }
-.game-over-overlay.fully-visible {
+
+.settings-backdrop.visible {
   opacity: 1;
   pointer-events: all;
 }
-.game-over-modal {
+
+.settings-menu {
   background: var(--primary-bg);
   color: var(--primary-color);
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: var(--card-shadow);
-  text-align: center;
-  max-width: 90%;
-  width: 400px;
-  animation: fadeInScale 0.5s ease forwards;
-}
-@keyframes fadeInScale {
-  0% { transform: scale(0.8); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-.game-over-modal h2 {
-  margin-top: 0;
-  font-size: 2rem;
-}
-.game-over-modal .new-high-score {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin: 1rem 0;
-  font-size: 1.25rem;
-}
-.game-over-modal .score-details {
-  margin: 1rem 0;
-  text-align: left;
-}
-.game-over-modal .score-label {
-  font-weight: 600;
-}
-.game-over-modal .score-value {
-  float: right;
-}
-.game-over-modal .restart-btn,
-.game-over-modal .share-btn {
-  margin-top: 1rem;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  border: none;
-  border-radius: 6px;
-  background: var(--accent-color);
-  color: #fff;
-  cursor: pointer;
-  box-shadow: var(--inner-shadow);
-  transition: background-color 0.3s, transform 0.2s;
-}
-.game-over-modal .restart-btn:hover,
-.game-over-modal .share-btn:hover {
-  background: var(--accent-hover);
-  transform: translateY(-2px);
-}
-@media (max-width: 480px) {
-  .game-over-modal {
-    width: 90%;
-    padding: 1.5rem;
-  }
-  .game-over-modal h2 {
-    font-size: 1.5rem;
-  }
-  .game-over-modal .restart-btn,
-  .game-over-modal .share-btn {
-    width: 100%;
-  }
-}
-
-/* Tutorial Modal Styles */
-.tutorial-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  z-index: 900;
-}
-.tutorial-modal {
-  position: fixed;
+  width: clamp(300px, 90vw, 420px); /* Adjusted width */
+  max-height: calc(100vh - 4rem); /* Ensure padding from viewport edges */
+  overflow-y: auto;
+  border-radius: 16px; /* Larger radius */
+  padding: 0; /* Remove padding, will be handled by sections */
+  box-shadow: 0 12px 35px rgba(0,0,0,0.25); /* Enhanced shadow */
+  display: flex; /* Use flex for better internal layout */
+  flex-direction: column; /* Stack header, tabs, content */
+  position: fixed; 
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--primary-bg);
+  transform: translate(-50%, -50%) scale(0.95);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+  z-index: 801;
+  animation: none;
+}
+
+.settings-menu.visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: all;
+}
+
+.dark-mode .settings-menu {
+  background: var(--dark-secondary); 
+  color: var(--dark-text);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.dark-mode .menu-header {
+  border-bottom-color: rgba(255,255,255,0.15);
+}
+
+.menu-title {
+  font-size: 1.5rem; /* Adjusted size */
+  font-weight: 600;
+  margin: 0;
+  color: var(--accent-color);
+}
+
+.dark-mode .menu-title {
+  color: var(--tertiary-color);
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
   color: var(--primary-color);
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: var(--card-shadow);
-  max-width: 90%;
-  width: 360px;
-  z-index: 1000;
-  overflow-y: auto;
-  max-height: 80vh;
-}
-.tutorial-modal h2 {
-  margin-top: 0;
-  font-size: 1.5rem;
-}
-.tutorial-modal p,
-.tutorial-modal ul {
-  text-align: left;
-  margin: 0.5rem 0;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-.tutorial-close-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: transparent;
-  border: none;
-  font-size: 1.2rem;
   cursor: pointer;
-}
-
-/* Settings Menu Backdrop */
-.settings-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 900;
-}
-.settings-menu {
-  position: fixed;
-  top: 50%;
-  right: 50%;
-  transform: translate(50%, -50%);
-  z-index: 1000;
-}
-
-
-/* Responsive adjustments */
-=======
-/* Consolidated mobile grid override to ensure 10x10 cells fit viewport */
-@media (max-width: 768px) {
-  :root {
-    --cell-size-mobile: calc((100vw - (var(--grid-gap) * 9)) / 10);
-  }
-  .grid-board-container {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    padding: 0 !important;
-    aspect-ratio: 1 !important;
-    margin: 0 auto !important;
-  }
-  .grid-board {
-    display: grid !important;
-    width: 100% !important;
-    height: auto !important;
-    grid-template-columns: repeat(10, var(--cell-size-mobile)) !important;
-    grid-template-rows: repeat(10, var(--cell-size-mobile)) !important;
-    gap: var(--grid-gap) !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-  .grid-cell {
-    width: var(--cell-size-mobile) !important;
-    height: var(--cell-size-mobile) !important;
-  }
-}
-
-/* Consolidated mobile grid override */
-
-@media (max-width: 768px) {
-  :root {
-    --cell-size: var(--cell-size-mobile);
-    --cell-size-mobile: calc((100vw - (var(--grid-gap)*9)) / 10);
-  }
-
-  .App {
-    padding: var(--game-padding);
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    box-sizing: border-box;
-    border-radius: 16px;
-    overflow: visible !important;
-  }
-
-  .game-container {
-    grid-template-columns: 1fr !important;
-    grid-template-rows: auto 1fr !important;
-    gap: 0.75rem !important;
-    overflow-x: hidden;
-  }
-
-  .grid-board-container {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    padding: 0 !important;
-    margin: 0 auto !important;
-    box-sizing: border-box;
-    overflow: hidden;
-  }
-
-  .grid-board {
-    display: grid !important;
-    grid-template-columns: repeat(10, var(--cell-size-mobile)) !important;
-    grid-template-rows:    repeat(10, var(--cell-size-mobile)) !important;
-    gap:    var(--grid-gap) !important;
-    padding: var(--grid-gap) !important;
-    width: calc(var(--cell-size-mobile)*10 + var(--grid-gap)*9) !important;
-    height: auto !important;
-    margin: 0 auto !important;
-  }
-
-  .grid-cell {
-    width: var(--cell-size-mobile) !important;
-    height: var(--cell-size-mobile) !important;
-    aspect-ratio: 1 !important;
-    border-radius: 8px !important;
-  }
-
-  /* Hide duplicated or conflicting overrides */
-  /* Removed multiple .pulse, .fadeIn, .settings-menu, .gear-icon re-definitions */
-}
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/* SIMPLIFIED MOBILE GRID OVERRIDE                                        */
-/* make the 10×10 grid fill the screen and each cell auto‑square.         */
-@media (max-width: 768px) {
-  .grid-board-container {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 auto !important;
-    padding: 0 !important;
-  }
-  .grid-board {
-    display: grid !important;
-    grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
-    grid-template-rows:    repeat(10, minmax(0, 1fr)) !important;
-    gap:    var(--grid-gap) !important;
-    padding: var(--grid-gap) !important;
-    width:  100% !important;
-    height: auto !important;
-  }
-  .grid-cell {
-    width:        100% !important;
-    height:       100% !important;
-    aspect-ratio: 1        !important;
-  }
-}
-/* ────────────────────────────────────────────────────────────────────────── */
-
-/* ——— Remove duplicated keyframes ——— */
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes pulse {
-  0% { opacity: 0.7; transform: scale(0.98); }
-  100% { opacity: 1; transform: scale(1.02); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Mobile specific refinements */
-@media (max-width: 768px) {
-  /* Hide header scoreboard to avoid duplication */
-  .app-header .header-score {
-    display: none !important;
-  }
-  /* Adjust header layout to center title and loader */
-  .app-header {
-    grid-template-columns: 1fr auto;
-    padding: 0.5rem 1rem;
-  }
-  /* Style mobile bottom score display */
-  .mobile-score-display {
-    width: 100%;
-    padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(8px);
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    margin: 1rem 0;
-  }
-  .app-header {
-    grid-template-columns: auto auto !important;
-    justify-items: center;
-    padding: 0.5rem 1rem;
-    height: auto;
-  }
-  .app-header h1 {
-    font-size: 1.5rem !important;
-    margin: 0;
-  }
-  .app-header .loader-logo {
-    margin: 0;
-  }
-
-  .mobile-score-display .score-board {
-    justify-content: space-between !important;
-  }
-}
-
-/* Further refinements for very small devices */
-@media (max-width: 414px) {
-  /* Header adjustments */
-  .app-header {
-    grid-template-columns: 1fr auto !important;
-    gap: 0.5rem;
-  }
-  .app-header h1 {
-    font-size: 1.5rem !important;
-  }
-  .loader-logo {
-    width: 30px !important;
-    height: 30px !important;
-  }
-
-  /* Shapes panel horizontal layout */
-  .shape-previews {
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    align-items: center;
-    gap: 0.5rem !important;
-  }
-  .shape-preview {
-    flex: 1 !important;
-    padding: 0.5rem !important;
-    margin: 0 !important;
-    background: rgba(255,255,255,0.03) !important;
-  }
-
-  /* Mobile bottom score adjustments */
-  .mobile-score-display {
-    font-size: 0.9rem !important;
-    padding: 0.5rem 0.75rem !important;
-  }
-  .mobile-score-display .score-value {
-    font-size: 1.1rem !important;
-  }
-}
-
-/* Mobile scoreboard layout enhancements */
-@media (max-width: 768px) {
-  .mobile-score-display .score-board {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-around !important;
-  }
-  .mobile-score-display .score-item {
-    flex: 1 1 auto !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-  .mobile-score-display .score-item:not(:last-child)::after {
-    display: none !important;
-  }
-}
-
-
-/* Gear icon in header */
-.gear-icon {
-  font-size: 1.5rem;
-  background: transparent;
-  box-shadow: none;
-  border: none;
-  padding: 0.4rem;
+  padding: 0.5rem;
+  display: flex; /* For centering SVG */
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-.gear-icon:hover {
-  background: rgba(255,255,255,0.3);
-  transform: rotate(20deg);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Settings menu backdrop */
-.settings-backdrop {
-  background: rgba(0,0,0,0.4);
-  backdrop-filter: blur(2px);
+.dark-mode .close-btn {
+  color: var(--dark-text);
 }
 
-/* Settings menu container */
-.settings-menu {
-  background: var(--primary-bg);
-  color: var(--primary-color);
-  width: clamp(280px, 80vw, 350px);
-  max-height: calc(100vh - 3rem);
-  overflow-y: auto;
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  top: 70px;
-  right: 16px;
-  transform: none;
+.close-btn:hover {
+  background-color: rgba(0,0,0,0.05);
+  color: var(--accent-color);
+}
+
+.dark-mode .close-btn:hover {
+  background-color: rgba(255,255,255,0.1);
+  color: var(--tertiary-color);
 }
 
 /* Tabs styling */
 .settings-tabs {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 0; /* Remove gap, tabs will touch */
+  padding: 0.75rem 1.5rem; /* Padding around tabs */
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  background-color: rgba(0,0,0,0.02);
 }
+
+.dark-mode .settings-tabs {
+  border-bottom-color: rgba(255,255,255,0.1);
+  background-color: rgba(255,255,255,0.03);
+}
+
 .settings-tab {
   flex: 1;
-  background: var(--secondary-color);
+  background: transparent;
   border: none;
-  padding: 0.5rem;
-  border-radius: 6px;
-  font-weight: 600;
+  padding: 0.75rem 0.5rem; /* Adjusted padding */
+  border-radius: 8px; /* Rounded tabs */
+  font-weight: 500; /* Slightly less bold */
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
+  gap: 0.5rem; /* Space between icon and label */
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+  color: var(--primary-color);
+  text-align: center;
 }
+
+.dark-mode .settings-tab {
+  color: var(--dark-text);
+}
+
+.settings-tab:hover {
+  background-color: rgba(var(--accent-color-rgb), 0.1);
+  color: var(--accent-color);
+}
+
+.dark-mode .settings-tab:hover {
+  background-color: rgba(var(--tertiary-color-rgb), 0.15);
+  color: var(--tertiary-color);
+}
+
 .settings-tab.active {
   background: var(--accent-color);
   color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(var(--accent-color-rgb), 0.3);
+}
+
+.dark-mode .settings-tab.active {
+  background: var(--tertiary-color);
+  box-shadow: 0 2px 8px rgba(var(--tertiary-color-rgb), 0.4);
+}
+
+.tab-icon {
+  font-size: 1.1rem;
+}
+
+.tab-label {
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* Settings Content Area */
+.settings-content {
+  padding: 1.5rem;
+  overflow-y: auto; /* Allow content to scroll if it exceeds max-height */
+  flex-grow: 1; /* Allow content to take available space */
 }
 
 /* Panel visibility */
-.settings-panel { display: none; }
-.settings-panel.active { display: block; }
+.settings-panel { 
+  display: none; 
+  animation: panelFadeIn 0.3s ease-out forwards;
+}
+.settings-panel.active { 
+  display: block; 
+}
 
-/* Panel group spacing */
-.panel-group { margin-bottom: 1rem; }
-.menu-btn { width: 100%; }
-.option-btn, .base-difficulty-btn, .mode-option, .theme-option {
+@keyframes panelFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Panel group styling */
+.panel-group {
+  margin-bottom: 1.75rem; /* Increased spacing */
+}
+.panel-group:last-child {
+  margin-bottom: 0;
+}
+
+.panel-group-title {
+  font-size: 1.1rem; /* Slightly larger group titles */
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.dark-mode .panel-group-title {
+  color: var(--dark-text);
+  border-bottom-color: rgba(255,255,255,0.1);
+}
+
+/* General button styling within settings */
+.settings-panel .menu-btn,
+.settings-panel .option-btn,
+.settings-panel .base-difficulty-btn,
+.settings-panel .mode-option,
+.settings-panel .theme-option {
+  display: flex; /* For icon and label alignment */
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   width: 100%;
+  padding: 0.75rem 1rem; /* Consistent padding */
   margin-bottom: 0.5rem;
-}
-.theme-selector { display: grid; grid-template-columns: repeat(2,1fr); gap: 0.5rem; }
-.theme-preview { width: 100%; height: 2rem; border-radius: 4px; }
-.default-theme { background: linear-gradient(135deg, #6259ff, #4d61fc); }
-.modern-theme { background: linear-gradient(135deg, #ff7e5f, #6c63ff); }
-
-/* Close button positioning */
-.menu-btn.close-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: none; font-size: 1.2rem; }
-
-/* Sleek Minimalistic Overrides */
-:root {
-  /* New unified card background and shadows */
-  --card-bg: rgba(255,255,255,0.15);
-  --card-radius: 12px;
-  --card-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  background-color: var(--primary-bg);
+  color: var(--primary-color);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
 }
 
-/* Apply unified style to containers */
-.App,
-.app-header,
-.settings-menu,
-.mobile-score-display,
-.game-over-modal,
-.tutorial-modal {
-  background: var(--card-bg) !important;
-  border-radius: var(--card-radius) !important;
-  box-shadow: var(--card-shadow) !important;
+.dark-mode .settings-panel .menu-btn,
+.dark-mode .settings-panel .option-btn,
+.dark-mode .settings-panel .base-difficulty-btn,
+.dark-mode .settings-panel .mode-option,
+.dark-mode .settings-panel .theme-option {
+  background-color: var(--dark-cell);
+  border-color: rgba(255,255,255,0.15);
+  color: var(--dark-text);
 }
 
-/* Simplify grid board appearance */
-.grid-board {
-  background: transparent !important;
-  padding: 8px !important;
-  box-shadow: none !important;
-  border-radius: var(--card-radius) !important;
+.settings-panel .menu-btn:hover,
+.settings-panel .option-btn:hover,
+.settings-panel .base-difficulty-btn:hover,
+.settings-panel .mode-option:hover,
+.settings-panel .theme-option:hover {
+  border-color: var(--accent-color);
+  background-color: rgba(var(--accent-color-rgb), 0.05);
+  color: var(--accent-color);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(var(--accent-color-rgb), 0.1);
 }
 
-/* Subtle cell borders */
-.grid-cell {
-  /* border-preserve only, allow inline backgroundColor */
-  border: 1px solid rgba(255,255,255,0.2) !important;
-  box-shadow: none !important;
-}
-.grid-cell.filled {
-  /* allow cell color via inline style */
-  border-color: transparent !important;
-}
-
-/* Simplify next-shapes previews */
-.shape-preview {
-  background: transparent !important;
-  box-shadow: none !important;
-  border: 1px solid rgba(255,255,255,0.2) !important;
-  border-radius: var(--card-radius) !important;
+.dark-mode .settings-panel .menu-btn:hover,
+.dark-mode .settings-panel .option-btn:hover,
+.dark-mode .settings-panel .base-difficulty-btn:hover,
+.dark-mode .settings-panel .mode-option:hover,
+.dark-mode .settings-panel .theme-option:hover {
+  border-color: var(--tertiary-color);
+  background-color: rgba(var(--tertiary-color-rgb), 0.1);
+  color: var(--tertiary-color);
+  box-shadow: 0 3px 10px rgba(var(--tertiary-color-rgb), 0.15);
 }
 
-/* Minimalistic scoreboard */
-.score-board {
-  background: transparent !important;
-  box-shadow: none !important;
-  border: none !important;
+/* Active state for option buttons */
+.settings-panel .option-btn.active,
+.settings-panel .base-difficulty-btn.active,
+.settings-panel .mode-option.active,
+.settings-panel .theme-option.active {
+  background-color: var(--accent-color);
+  color: #fff;
+  border-color: var(--accent-color);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(var(--accent-color-rgb), 0.3);
 }
 
-/* Gear icon: transparent */
-.gear-icon {
-  background: transparent !important;
-  box-shadow: none !important;
+.dark-mode .settings-panel .option-btn.active,
+.dark-mode .settings-panel .base-difficulty-btn.active,
+.dark-mode .settings-panel .mode-option.active,
+.dark-mode .settings-panel .theme-option.active {
+  background-color: var(--tertiary-color);
+  border-color: var(--tertiary-color);
+  box-shadow: 0 2px 8px rgba(var(--tertiary-color-rgb), 0.4);
 }
 
-/* Accent hover states */
-.settings-tab.active,
-.menu-btn.active,
-.restart-btn:hover,
-.share-btn:hover {
-  background: var(--accent-hover) !important;
-  color: #fff !important;
-=======
-  /* Hide duplicated or conflicting overrides */
-  /* Removed multiple .pulse, .fadeIn, .settings-menu, .gear-icon re-definitions */
+/* Specific button styles */
+.settings-panel .primary-btn {
+  background-color: var(--accent-color);
+  color: #fff;
+  font-weight: 600;
+}
+.dark-mode .settings-panel .primary-btn {
+  background-color: var(--tertiary-color);
+}
+.settings-panel .primary-btn:hover {
+  background-color: var(--accent-hover);
+  box-shadow: 0 4px 12px rgba(var(--accent-color-rgb), 0.35);
+}
+.dark-mode .settings-panel .primary-btn:hover {
+  background-color: rgba(var(--tertiary-color-rgb), 0.85);
+  box-shadow: 0 4px 12px rgba(var(--tertiary-color-rgb), 0.4);
 }
 
-/* Consolidated mobile styles */
-@media (max-width: 768px) {
-  :root { --cell-size: var(--cell-size-mobile); --cell-size-mobile: calc((100vw - (var(--grid-gap)*9)) / 10); }
-  .App { padding: var(--game-padding); height: auto; min-height: auto; border-radius: 16px; }
-  .app-header { padding: 0.5rem 1rem; margin-bottom: 0.5rem; height: auto; }
-  .app-header h1 { font-size: clamp(1.5rem, 5vw, 2rem); }
-  .game-container { display: flex; flex-direction: column; gap: 0.75rem; margin: 0; padding: 0; width: 100%; }
-  .grid-board-container { width: 95%; padding: 0; margin: 0 auto; aspect-ratio: 1; max-width: 90vw; }
-  .grid-board { display: grid; grid-template-columns: repeat(10, var(--cell-size-mobile)); grid-template-rows: repeat(10, var(--cell-size-mobile)); gap: var(--grid-gap); padding: var(--grid-gap); }
-  .grid-cell { width: var(--cell-size-mobile); height: var(--cell-size-mobile); }
-  .shape-cell { width: calc(var(--shape-cell-size) * 1.2); height: calc(var(--shape-cell-size) * 1.2); }
-  .shape-preview, .menu-btn, .gear-icon, .close-btn { min-width: 44px; min-height: 44px; }
+/* Difficulty buttons layout */
+.difficulty-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.5rem;
 }
 
-/* iPhone 11 specific optimizations (max-width: 414px) */
-@media (max-width: 414px) {
-  .grid-board-container { width: 100vw; padding: 0; margin: 0; }
-  .grid-board { grid-template-columns: repeat(10, var(--cell-size-mobile)); grid-template-rows: repeat(10, var(--cell-size-mobile)); padding: 2px; gap: 2px; }
-  .grid-cell { border-radius: 0; }
-  .shape-preview:hover { transform: none; box-shadow: none; }
-  .shape-preview:active { transform: scale(1.05); }
+.difficulty-icon {
+  font-size: 1.2rem;
 }
 
-/* Keyframes consolidated */
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+.base-difficulty-container {
+  margin-top: 1rem;
+  border-top: 1px dashed rgba(0,0,0,0.1);
+  padding-top: 1rem;
+}
+.dark-mode .base-difficulty-container {
+  border-top-color: rgba(255,255,255,0.1);
 }
 
-@keyframes pulse {
-  0% { opacity: 0.7; transform: scale(0.98); }
-  100% { opacity: 1; transform: scale(1.02); }
+.base-difficulty-btn .btn-label {
+  font-weight: bold;
+}
+.base-difficulty-btn .btn-description {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  display: block; /* Ensure it takes full width */
+  margin-top: 0.25rem;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Mode Switch (Light/Dark) */
+.mode-switch {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
 }
+.mode-option {
+  flex: 1;
+}
+.mode-icon {
+  font-size: 1.3rem;
+}
+
+/* Theme Selector */
+.theme-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+.theme-option {
+  flex-direction: column; /* Stack preview and name */
+  padding: 0.75rem;
+  height: auto;
+}
+.theme-preview {
+  width: 100%;
+  height: 40px; /* Increased height */
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  border: 2px solid transparent; /* For active state */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.theme-option.active .theme-preview {
+  border-color: #fff; /* White border for active theme */
+  box-shadow: inset 0 0 0 2px var(--accent-color);
+}
+.dark-mode .theme-option.active .theme-preview {
+   box-shadow: inset 0 0 0 2px var(--tertiary-color);
+}
+
+.default-theme-preview { background: linear-gradient(135deg, #6259ff, #36c5f0); }
+.modern-theme-preview { background: linear-gradient(135deg, #ff7e5f, #6c63ff); }
+.neon-theme-preview { 
+  background: #1a1a1a;
+  border: 2px solid #0ff;
+  box-shadow: 0 0 10px #0ff, inset 0 0 5px #0ff;
+  color: #0ff;
+}
+.neon-theme-preview::before {
+  content: "Neon";
+}
+
+.theme-name {
+  font-size: 0.9rem;
+}
+
+/* Save/Load Section */
+.save-load-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.auto-save-info {
+  margin-top: 1rem;
+  text-align: center;
+}
+.info-text {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  line-height: 1.4;
+}
+
+/* Help Section */
+.keyboard-shortcuts {
+  margin-top: 1rem;
+  background-color: rgba(0,0,0,0.03);
+  padding: 1rem;
+  border-radius: 8px;
+}
+.dark-mode .keyboard-shortcuts {
+  background-color: rgba(255,255,255,0.05);
+}
+
+.shortcuts-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.shortcuts-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.shortcuts-list li {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.shortcuts-list kbd {
+  background-color: rgba(0,0,0,0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.85em;
+  margin-right: 0.5em;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+
+.dark-mode .shortcuts-list kbd {
+  background-color: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.2);
+}
+
+
+/* Remove duplicated keyframes and other general styles already handled */
+/* ... (Remove .menu-btn, .difficulty-buttons, etc. if they are fully covered by new .settings-panel button styles) ... */
+
+/* Ensure the overall .settings-menu styles take precedence for width, max-height etc. */
+/* The .settings-menu.visible should correctly apply the final visible state */

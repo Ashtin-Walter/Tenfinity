@@ -1,15 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const GridCell = React.memo(({ filled, preview, color }) => {
+const GridCell = React.memo(({ filled, preview, invalid, color, canPlace }) => {
+  const getPreviewClass = () => {
+    if (!preview) return '';
+    if (canPlace === false) return 'preview invalid';
+    if (canPlace === true) return 'preview valid';
+    return 'preview'; // Default preview state when canPlace is undefined
+  };
+
   return (
     <div 
-      className={`grid-cell ${filled ? 'filled' : ''} ${preview ? 'preview' : ''}`}
+      className={`grid-cell ${filled ? 'filled' : ''} ${getPreviewClass()}`}
       style={{
-        // Keep shape color for both preview and placed cells
-        backgroundColor: (filled || preview) && color ? color : undefined,
-        borderColor: preview && color ? color : undefined,
-        boxShadow: preview && color ? `0 0 15px ${color}` : undefined
+        backgroundColor: (filled && color ? color : undefined),
+        // Remove inline styles for preview as they're now handled by CSS classes
       }}
     ></div>
   );
@@ -18,7 +23,9 @@ const GridCell = React.memo(({ filled, preview, color }) => {
 GridCell.propTypes = {
   filled: PropTypes.bool.isRequired,
   preview: PropTypes.bool,
-  color: PropTypes.string
+  invalid: PropTypes.bool,
+  color: PropTypes.string,
+  canPlace: PropTypes.bool
 };
 
 export default GridCell;
