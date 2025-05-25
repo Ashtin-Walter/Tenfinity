@@ -4,11 +4,13 @@ import NextShapes from './components/NextShapes';
 import GameOver from './components/GameOver';
 import ScoreBoard from './components/ScoreBoard';
 import SettingsMenu from './components/SettingsMenu';
-import { getBalancedShapes } from './utils/shapeGenerator';
+import { getBalancedShapes, rotateShape } from './utils/shapeGenerator';
 import './App.css';
 import Shape from './components/Shape';
+// import ShapeGenerator from './components/ShapeGenerator';
 
 const GRID_SIZE = 10; // added constant GRID_SIZE
+const TOUCH_Y_OFFSET = 100; // Constant for touch Y offset
 
 // Utility function to generate an empty grid
 const generateEmptyGrid = () => Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(false));
@@ -17,7 +19,7 @@ const generateEmptyGrid = () => Array(GRID_SIZE).fill().map(() => Array(GRID_SIZ
 const generateEmptyColorGrid = () => Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(null));
 
 // Modified utility function to always update grid state and trigger animation when lines are cleared
-const checkForCompletedLines = (grid, colorGrid, setScore, setGrid, setColorGrid, setIsLineCleared) => {
+const checkForCompletedLines = (grid, colorGrid, setScore, setGrid, setColorGrid, setIsLineCleared, gridElement) => {
   let linesCleared = 0;
   const completedRows = [];
   const completedCols = [];
@@ -45,82 +47,121 @@ const checkForCompletedLines = (grid, colorGrid, setScore, setGrid, setColorGrid
     }
   }
 
-  // Clear completed rows and columns
-  const newGrid = grid.map(row => [...row]);
-  const newColorGrid = colorGrid.map(row => [...row]);
-
-  // Mark cells for animation before clearing
-  for (const rowIndex of completedRows) {
-    for (let col = 0; col < GRID_SIZE; col++) {
-      const cellElement = document.querySelector(`.grid-cell-container[data-row="${rowIndex}"][data-col="${col}"] .grid-cell`);
-      if (cellElement) {
-        cellElement.classList.add('cell-cleared');
-      }
-    }
-  }
-
-  for (const colIndex of completedCols) {
-    for (let row = 0; row < GRID_SIZE; row++) {
-      const cellElement = document.querySelector(`.grid-cell-container[data-row="${row}"][data-col="${colIndex}"] .grid-cell`);
-      if (cellElement) {
-        cellElement.classList.add('cell-cleared');
-      }
-    }
-  }
-
-  // Delayed clearing of completed lines to allow for animation
-  setTimeout(() => {
-    // Clear completed rows
-    for (const rowIndex of completedRows) {
-      newGrid[rowIndex] = Array(GRID_SIZE).fill(false);
-      newColorGrid[rowIndex] = Array(GRID_SIZE).fill(null);
-    }
-
-    // Clear completed columns
-    for (const colIndex of completedCols) {
-      for (let row = 0; row < GRID_SIZE; row++) {
-        newGrid[row][colIndex] = false;
-        newColorGrid[row][colIndex] = null;
-      }
-    }
-
-    // Update the grid state
-    setGrid([...newGrid]);
-    setColorGrid([...newColorGrid]);
-  }, 500); // Timing matches the animation duration
-
-  // Always update grid state, even if no lines were cleared
-  setGrid([...grid]);
-  setColorGrid([...colorGrid]);
-
   if (linesCleared > 0) {
-    setScore(prevScore => prevScore + linesCleared);
-    // Trigger the animation when lines are cleared
-    setIsLineCleared(true);
-    // Reset the animation state after the animation duration
+    const newGrid = grid.map(row => [...row]);
+    const newColorGrid = colorGrid.map(row => [...row]);
+
+    if (gridElement) {
+      // Apply initial 'cell-cleared' animation
+      completedRows.forEach(rowIndex => {
+        for (let col = 0; col < GRID_SIZE; col++) {
+          const cellElement = gridElement.querySelector(`.grid-cell-container[data-row="${rowIndex}"][data-col="${col}"] .grid-cell`);
+          if (cellElement) {
+            cellElement.classList.add('cell-cleared');
+          }
+        }
+      });
+
+      completedCols.forEach(colIndex => {
+        for (let row = 0; row < GRID_SIZE; row++) {
+          const cellElement = gridElement.querySelector(`.grid-cell-container[data-row="${row}"][data-col="${colIndex}"] .grid-cell`);
+          if (cellElement) {
+            cellElement.classList.add('cell-cleared');
+          }
+        }
+      });
+    }
+
+    // Delay for initial highlight animation to play
     setTimeout(() => {
-      setIsLineCleared(false);
-    }, 1500); // Duration matches our new animation
+      if (!gridElement) return; // Check gridElement at the start of timeout
+
+      // Apply 'cell-disappear' animation
+      completedRows.forEach(rowIndex => {
+        for (let col = 0; col < GRID_SIZE; col++) {
+          const cellElement = gridElement.querySelector(`.grid-cell-container[data-row="${rowIndex}"][data-col="${col}"] .grid-cell`);
+          if (cellElement) {
+            cellElement.classList.remove('cell-cleared'); // Remove highlight
+            cellElement.classList.add('cell-disappear'); // Add disappear animation
+          }
+        }
+      });
+
+      completedCols.forEach(colIndex => {
+        for (let row = 0; row < GRID_SIZE; row++) {
+          const cellElement = gridElement.querySelector(`.grid-cell-container[data-row="${row}"][data-col="${colIndex}"] .grid-cell`);
+          if (cellElement) {
+            cellElement.classList.remove('cell-cleared'); // Remove highlight
+            cellElement.classList.add('cell-disappear'); // Add disappear animation
+          }
+        }
+      });
+
+      // Delay clearing the grid data to allow disappear animation to play
+      setTimeout(() => {
+        completedRows.forEach(rowIndex => {
+          newGrid[rowIndex] = Array(GRID_SIZE).fill(false);
+          newColorGrid[rowIndex] = Array(GRID_SIZE).fill(null);
+          if (gridElement) {
+            for (let col = 0; col < GRID_SIZE; col++) {
+              const cellElement = gridElement.querySelector(`.grid-cell-container[data-row="${rowIndex}"][data-col="${col}"] .grid-cell`);
+              if (cellElement) {
+                cellElement.classList.remove('cell-disappear'); // Clean up class
+              }
+            }
+          }
+        });
+
+        completedCols.forEach(colIndex => {
+          for (let row = 0; row < GRID_SIZE; row++) {
+            newGrid[row][colIndex] = false;
+            newColorGrid[row][colIndex] = null;
+            if (gridElement) {
+              const cellElement = gridElement.querySelector(`.grid-cell-container[data-row="${row}"][data-col="${colIndex}"] .grid-cell`);
+              if (cellElement) {
+                cellElement.classList.remove('cell-disappear'); // Clean up class
+              }
+            }
+          }
+        });
+
+        setGrid(newGrid);
+        setColorGrid(newColorGrid);
+        setScore(prevScore => prevScore + linesCleared * 10);
+        setIsLineCleared(true); // Activate loader-logo animation
+
+        // Reset loader-logo animation after it plays
+        setTimeout(() => {
+          setIsLineCleared(false);
+        }, 1500); // Duration of loader-logo animation
+
+      }, 500); // Duration of cell-disappear animation (must match CSS)
+
+    }, 300); // Duration of cell-cleared animation (must match CSS)
   }
 };
 
-// Moved canPlaceShape before useEffect for correct usage
+// Enhanced placement check: test all four rotations of each shape
 const canPlaceShape = (grid, shape) => {
-  const pattern = shape.pattern || shape;
-  for (let rowIndex = 0; rowIndex <= GRID_SIZE - pattern.length; rowIndex++) {
-    for (let colIndex = 0; colIndex <= GRID_SIZE - pattern[0].length; colIndex++) {
-      let canPlace = true;
-      for (let y = 0; y < pattern.length; y++) {
-        for (let x = 0; x < pattern[y].length; x++) {
-          if (pattern[y][x] && grid[rowIndex + y][colIndex + x]) {
-            canPlace = false;
-            break;
+  if (!shape) return false;
+  for (let rot = 0; rot < 4; rot++) {
+    const candidate = rotateShape(shape, rot);
+    const pattern = candidate.pattern || candidate;
+    const patH = pattern.length;
+    const patW = pattern[0].length;
+    for (let row = 0; row <= GRID_SIZE - patH; row++) {
+      for (let col = 0; col <= GRID_SIZE - patW; col++) {
+        let ok = true;
+        for (let y = 0; y < patH; y++) {
+          for (let x = 0; x < patW; x++) {
+            if (pattern[y][x] && grid[row + y][col + x]) {
+              ok = false;
+              break;
+            }
           }
+          if (!ok) break;
         }
-        if (!canPlace) break;
-      }
-      if (canPlace) {
-        return true;
+        if (ok) return true;
       }
     }
   }
@@ -128,8 +169,8 @@ const canPlaceShape = (grid, shape) => {
 };
 
 const App = () => {
-  const [grid, setGrid] = useState(generateEmptyGrid());
-  const [colorGrid, setColorGrid] = useState(generateEmptyColorGrid());
+  const [grid, setGrid] = useState(generateEmptyGrid);
+  const [colorGrid, setColorGrid] = useState(generateEmptyColorGrid);
   const [shapes, setShapes] = useState(() => getBalancedShapes(3, 'extreme'));
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(() => {
@@ -147,13 +188,15 @@ const App = () => {
   const [gameOver, setGameOver] = useState(false); // new state for game over
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isLandscape, setIsLandscape] = useState(window.innerHeight < window.innerWidth);
-  const [isTutorialOpen, setIsTutorialOpen] = useState(!localStorage.getItem('tutorialSeen'));
+  const [isTutorialOpen, setIsTutorialOpen] = useState(() => !localStorage.getItem('tutorialSeen'));
   const [isLineCleared, setIsLineCleared] = useState(false); // new state to track line clearing
+  const [prevGameState, setPrevGameState] = useState(null); // for undo
 
-  // Add a touchTimeout ref to throttle touch events
+  // Refs for touch handling and other direct DOM manipulations
   const touchTimeoutRef = useRef(null);
   const lastTouchPosRef = useRef(null);
   const touchStartTimeRef = useRef(0);
+  const gridRef = useRef(null); // Ref for the grid board container
 
   const changeDifficulty = useCallback((newDifficulty) => {
     setDifficulty(newDifficulty);
@@ -167,8 +210,8 @@ const App = () => {
 
   const getNextShapes = useCallback(() => {
     // Get a balanced set of shapes with the current difficulty
-    return getBalancedShapes(3, difficulty, shapes);
-  }, [difficulty, shapes]);
+    return getBalancedShapes(3, difficulty, shapes); // shapes dependency might cause frequent re-creation if shapes array identity changes often
+  }, [difficulty, shapes]); 
 
   const restartGame = useCallback(() => {
     setGrid(generateEmptyGrid());
@@ -180,13 +223,30 @@ const App = () => {
     setMenuOpen(false);
   }, [difficulty]);
 
+  // Utility to restore previous game state
+  const handleUndo = useCallback(() => {
+    if (!prevGameState) return;
+    const { grid: g, colorGrid: c, shapes: s, score: sc } = prevGameState;
+    setGrid(g);
+    setColorGrid(c);
+    setShapes(s);
+    setScore(sc);
+    setPrevGameState(null);
+  }, [prevGameState]);
+
+  // Memoize placeShapeOnGrid to prevent re-creation if dependencies haven't changed
   const placeShapeOnGrid = useCallback((shape, startX, startY) => {
+    if (!shape) {
+      console.error('Attempted to place a null or undefined shape.');
+      return false;
+    }
+    // Save current state for undo before making changes
+    setPrevGameState({ grid, colorGrid, shapes, score }); 
+
     const newGrid = grid.map(row => [...row]);
     const newColorGrid = colorGrid.map(row => [...row]);
-    // Keep track of newly placed cells for animation
     const newlyPlacedCells = [];
     
-    // Get the shape pattern and color
     const pattern = shape.pattern || shape;
     const color = shape.color || 'var(--accent-color)';
 
@@ -196,43 +256,50 @@ const App = () => {
           const gridY = startY + y;
           const gridX = startX + x;
 
-          if (gridY >= 0 && gridY < GRID_SIZE && gridX >= 0 && gridX < GRID_SIZE && !newGrid[gridY][gridX]) {
+          if (
+            gridY >= 0 &&
+            gridY < GRID_SIZE &&
+            gridX >= 0 &&
+            gridX < GRID_SIZE &&
+            !newGrid[gridY][gridX] // Simplified condition: only place if cell is empty
+          ) {
             newGrid[gridY][gridX] = true;
             newColorGrid[gridY][gridX] = color;
-            // Store coordinates of newly placed cells
             newlyPlacedCells.push({ row: gridY, col: gridX });
           } else {
-            return false;
+            // Invalid placement (out of bounds or collision)
+            return false; 
           }
         }
       }
     }
 
-    // First apply the grid update
     setGrid(newGrid);
     setColorGrid(newColorGrid);
     
-    // Then apply the "newly-placed" class to the placed cells for animation
+    // Animate newly placed cells
+    // Consider moving DOM manipulation to a useEffect hook if it becomes complex
     setTimeout(() => {
       newlyPlacedCells.forEach(({row, col}) => {
-        const cellElement = document.querySelector(`.grid-cell-container[data-row="${row}"][data-col="${col}"] .grid-cell`);
+        // Use gridRef for a more stable querySelector context if possible
+        const cellElement = gridRef.current ? gridRef.current.querySelector(`.grid-cell-container[data-row="${row}"][data-col="${col}"] .grid-cell`) : null;
         if (cellElement) {
           cellElement.classList.add('newly-placed');
-          // Remove the class after animation completes
           setTimeout(() => {
             cellElement.classList.remove('newly-placed');
-          }, 800); // Slightly longer than animation duration to ensure it completes
+          }, 800);
         }
       });
     }, 10);
 
-    // Check for completed lines after a slight delay to allow animation to be visible
+    // Check for completed lines
+    // Pass the updated grid and colorGrid directly to avoid stale closures
     setTimeout(() => {
-      checkForCompletedLines(newGrid, newColorGrid, setScore, setGrid, setColorGrid, setIsLineCleared);
+      checkForCompletedLines(newGrid, newColorGrid, setScore, setGrid, setColorGrid, setIsLineCleared, gridRef.current);
     }, 400);
 
     return true;
-  }, [grid, colorGrid]);
+  }, [grid, colorGrid, shapes, score, setPrevGameState, setGrid, setColorGrid, setScore, setIsLineCleared, gridRef]); // Added gridRef to dependencies
 
   const handleDrop = useCallback((e) => {
     if (e && typeof e.preventDefault === "function") {
@@ -243,95 +310,135 @@ const App = () => {
     const { row: rowIndex, col: cellIndex } = previewPos;
     const success = placeShapeOnGrid(draggingShape.shape, cellIndex, rowIndex);
     
-    if (success) {
-      const newShapes = shapes.map((s, i) => i === draggingShape.index ? null : s);
-      if (newShapes.every(s => s === null)) {
-        // Generate new shapes with the current difficulty setting
-        setShapes(getNextShapes());
-      } else {
-        setShapes(newShapes);
-      }
-      
-      // Add visual feedback for successful placement
-      const gridElement = document.querySelector('.grid-board');
-      if (gridElement) {
-        gridElement.classList.add('shape-placed');
-        setTimeout(() => {
-          gridElement.classList.remove('shape-placed');
-        }, 300);
+    if (!success) {
+      navigator.vibrate?.(200); // Vibrate on failed placement
+      return;
+    }
+    
+    // Success case
+    const newShapes = shapes.filter((s, i) => i !== draggingShape.index); // Use filter for a new array
+    if (newShapes.every(s => s === null) || newShapes.length === 0) { // Check if all remaining are null or array is empty
+      setShapes(getNextShapes());
+    } else {
+      setShapes(newShapes);
+    }
+    
+    // Visual feedback for successful placement
+    // Consider using a state variable to toggle class if direct DOM manipulation becomes problematic
+    const gridElement = gridRef.current; // Use ref
+    if (gridElement) {
+      gridElement.classList.add('shape-placed');
+      setTimeout(() => {
+        gridElement.classList.remove('shape-placed');
+      }, 300);
+    }
+      setDraggingShape(null);
+    setPreviewPos(null);
+  }, [previewPos, draggingShape, shapes, placeShapeOnGrid, getNextShapes, gridRef]); // Added gridRef
+
+  // Helper function to check if shape can be placed at specific position
+  const canPlaceShapeAt = useCallback((shape, startRow, startCol) => {
+    if (!shape) return false;
+    
+    const pattern = shape.pattern || shape;
+    const patH = pattern.length;
+    const patW = pattern[0].length;
+    
+    // Check bounds
+    if (startRow + patH > GRID_SIZE || startCol + patW > GRID_SIZE) {
+      return false;
+    }
+    
+    // Check for collisions
+    for (let y = 0; y < patH; y++) {
+      for (let x = 0; x < patW; x++) {
+        if (pattern[y][x] && grid[startRow + y][startCol + x]) {
+          return false;
+        }
       }
     }
     
-    setDraggingShape(null);
-    setPreviewPos(null);
-  }, [previewPos, draggingShape, shapes, placeShapeOnGrid, getNextShapes]);
+    return true;
+  }, [grid]);
 
-  // Improved touch move handler with throttling and better positioning
+  // Touch move handler - optimized for better performance and visual feedback
   const handleTouchMove = useCallback((e) => {
     if (draggingShape) {
-      e.preventDefault();
+      e.preventDefault(); // Prevent scroll only when dragging
     }
     const touch = e.touches[0];
     if (!touch) return;
-    // Track last touch for drop
+
     lastTouchPosRef.current = { x: touch.clientX, y: touch.clientY, timestamp: Date.now() };
-    // Update preview position continuously
-    const raw = document.elementFromPoint(touch.clientX, touch.clientY);
-    const cell = raw?.closest('.grid-cell-container');
-    if (cell && cell.dataset.row !== undefined) {
-      setPreviewPos({ row: Number(cell.dataset.row), col: Number(cell.dataset.col) });
+
+    // Optimized elementFromPoint usage
+    const gridElement = gridRef.current;
+    if (!gridElement) return;
+
+    const rect = gridElement.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = (touch.clientY - TOUCH_Y_OFFSET) - rect.top; // Apply offset before calculating relative position
+
+    // Calculate approximate cell based on touch position relative to the grid container
+    const col = Math.floor(x / (rect.width / GRID_SIZE));
+    const row = Math.floor(y / (rect.height / GRID_SIZE));
+
+    if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
+      // Only update preview if position changed and add placement validation
+      if (!previewPos || previewPos.row !== row || previewPos.col !== col) {
+        const canPlace = draggingShape ? canPlaceShapeAt(draggingShape.shape, row, col) : true;
+        setPreviewPos({ row, col, canPlace });
+      }
     } else {
       setPreviewPos(null);
     }
-    // Update floating drag overlay
-    if (draggingShape) setDragPosition({ x: touch.clientX, y: touch.clientY });
-  }, [draggingShape]);
 
-  // Enhanced touch end handler with better reliability
+    if (draggingShape) {
+      setDragPosition({ x: touch.clientX, y: touch.clientY });
+    }
+  }, [draggingShape, gridRef, previewPos, canPlaceShapeAt]); // Added dependencies
+
+  // Touch end handler
   const handleTouchEnd = useCallback((e) => {
-    // Calculate touch duration to distinguish between taps and drags
     const touchDuration = Date.now() - touchStartTimeRef.current;
-    const wasShortTouch = touchDuration < 300; // Short touches are likely taps
+    const wasShortTouch = touchDuration < 300;
     
-    // Clear any pending throttle timeout
     if (touchTimeoutRef.current) {
       clearTimeout(touchTimeoutRef.current);
       touchTimeoutRef.current = null;
     }
     
-    // Handle drop based on where the user lifted their finger
-    if (lastTouchPosRef.current) {
-      const raw = document.elementFromPoint(
-        lastTouchPosRef.current.x,
-        lastTouchPosRef.current.y
-      );
-      const cell = raw?.closest('.grid-cell-container');
-      if (cell && cell.dataset.row !== undefined) {
-        setPreviewPos({ row: Number(cell.dataset.row), col: Number(cell.dataset.col) });
-      } else {
-        setPreviewPos(null);
+    // Use last valid previewPos if available, otherwise calculate from last touch point
+    if (!previewPos && lastTouchPosRef.current) {
+      const gridElement = gridRef.current;
+      if (gridElement) {
+        const rect = gridElement.getBoundingClientRect();
+        const x = lastTouchPosRef.current.x - rect.left;
+        const y = (lastTouchPosRef.current.y - TOUCH_Y_OFFSET) - rect.top;
+        const col = Math.floor(x / (rect.width / GRID_SIZE));
+        const row = Math.floor(y / (rect.height / GRID_SIZE));
+
+        if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
+          setPreviewPos({ row, col }); // Set previewPos right before handleDrop
+        } else {
+          setPreviewPos(null);
+        }
       }
-    }
+    } // This block ensures previewPos is set based on the final touch position before calling handleDrop
     
-    handleDrop();
+    handleDrop(); // handleDrop will use the latest previewPos
     
-    // Only reset draggingShape and preview if this wasn't a short touch/tap
-    // This helps for click-to-place where we want to keep the selection
     if (!wasShortTouch || !selectedShape) {
       setDraggingShape(null);
-      setPreviewPos(null);
+      // setPreviewPos(null); // previewPos is reset by handleDrop or if placement fails
     }
     
     lastTouchPosRef.current = null;
-    
-    // Remove the touching class
     document.body.classList.remove('touching');
-
-    // clear drag overlay
     setDragPosition(null);
-  }, [handleDrop, selectedShape]);
+  }, [handleDrop, selectedShape, gridRef, previewPos]); // Added gridRef and previewPos
 
-  // Improved touch start handler with better tracking
+  // Touch start handler
   const handleTouchStart = useCallback((e, index, shape) => {
     // Only prevent default if we're interacting with a shape
     // This allows normal scrolling when not dragging
@@ -367,7 +474,7 @@ const App = () => {
     }
   }, []);
 
-  // Handle clicking on a shape to select it
+  // Click on a shape to select it
   const handleShapeClick = useCallback((index, shape) => {
     // If the shape is already selected, deselect it
     if (selectedShape && selectedShape.index === index) {
@@ -380,62 +487,69 @@ const App = () => {
     }
   }, [selectedShape]);
 
-  // Handle clicking on a grid cell when a shape is selected
+  // Click on a grid cell when a shape is selected
   const handleCellClick = useCallback((rowIndex, colIndex) => {
     if (!selectedShape) return;
     
     const success = placeShapeOnGrid(selectedShape.shape, colIndex, rowIndex);
-    
-    if (success) {
-      const newShapes = shapes.map((s, i) => i === selectedShape.index ? null : s);
-      if (newShapes.every(s => s === null)) {
-        // Generate new shapes with the current difficulty setting
-        setShapes(getNextShapes());
-      } else {
-        setShapes(newShapes);
-      }
-      
-      // Add visual feedback for successful placement
-      const gridElement = document.querySelector('.grid-board');
-      if (gridElement) {
-        gridElement.classList.add('shape-placed');
-        setTimeout(() => {
-          gridElement.classList.remove('shape-placed');
-        }, 300);
-      }
-      
-      // Reset selectedShape and preview
-      setSelectedShape(null);
-      setDraggingShape(null);
-      setPreviewPos(null);
+    if (!success) {
+      navigator.vibrate?.(200);
+      return;
     }
-  }, [selectedShape, placeShapeOnGrid, shapes, getNextShapes]);
+    
+    const newShapes = shapes.filter((s, i) => i !== selectedShape.index); // Use filter
+    if (newShapes.every(s => s === null) || newShapes.length === 0) {
+      setShapes(getNextShapes());
+    } else {
+      setShapes(newShapes);
+    }
+    
+    const gridElement = gridRef.current; // Use ref
+    if (gridElement) {
+      gridElement.classList.add('shape-placed');
+      setTimeout(() => {
+        gridElement.classList.remove('shape-placed');
+      }, 300);
+    }    setSelectedShape(null);
+    setDraggingShape(null);
+    setPreviewPos(null);
+  }, [selectedShape, placeShapeOnGrid, shapes, getNextShapes, gridRef]); // Added gridRef
 
-  // Update preview position when mouse moves over grid
+  // Mouse move over grid for preview (desktop) - optimized with throttling
   const handleGridMouseMove = useCallback((e) => {
-    if (!selectedShape) return;
-    
-    const element = e.target.closest('.grid-cell-container');
-    if (element && element.dataset.row !== undefined && element.dataset.col !== undefined) {
-      setPreviewPos({
-        row: Number(element.dataset.row),
-        col: Number(element.dataset.col)
-      });
-    }
-  }, [selectedShape]);
+    if (!selectedShape || !gridRef.current) return;
 
-  // Clear the selected shape if the user clicks outside the grid and shapes area
+    const gridElement = gridRef.current;
+    const rect = gridElement.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const col = Math.floor(x / (rect.width / GRID_SIZE));
+    const row = Math.floor(y / (rect.height / GRID_SIZE));
+
+    if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
+      // Only update if position actually changed to reduce re-renders
+      if (!previewPos || previewPos.row !== row || previewPos.col !== col) {
+        // Check if shape can be placed at this position before showing preview
+        const canPlace = canPlaceShapeAt(selectedShape.shape, row, col);
+        setPreviewPos({ row, col, canPlace });
+      }
+    } else {
+      if (previewPos !== null) {
+        setPreviewPos(null); // Clear preview if outside grid
+      }    }
+  }, [selectedShape, gridRef, previewPos, canPlaceShapeAt]);
+
+  // Deselect shape on outside click
   useEffect(() => {
     const handleDocumentClick = (e) => {
-      // If no shape is selected, do nothing
       if (!selectedShape) return;
       
-      // Check if the click is inside grid or shapes container
-      const isGridClick = e.target.closest('.grid-board');
-      const isShapeClick = e.target.closest('.shape-preview');
-      
-      // If clicked outside both, deselect the shape
-      if (!isGridClick && !isShapeClick) {
+      const gridBoardElement = gridRef.current;
+      const shapesContainerElement = document.querySelector('.shapes-container'); // Assuming this selector is stable
+
+      if (gridBoardElement && !gridBoardElement.contains(e.target) && 
+          shapesContainerElement && !shapesContainerElement.contains(e.target)) {
         setSelectedShape(null);
         setDraggingShape(null);
         setPreviewPos(null);
@@ -444,8 +558,9 @@ const App = () => {
     
     document.addEventListener('click', handleDocumentClick);
     return () => document.removeEventListener('click', handleDocumentClick);
-  }, [selectedShape]);
+  }, [selectedShape, gridRef]); // Added gridRef
 
+  // Resize and orientation change handler
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -461,29 +576,28 @@ const App = () => {
     };
   }, []);
 
+  // Touch event listeners for mobile
   useEffect(() => {
     if (isMobile) {
       document.addEventListener('touchmove', handleTouchMove, { passive: false });
       document.addEventListener('touchend', handleTouchEnd);
-      
-      // Add touchcancel handling for better reliability
       document.addEventListener('touchcancel', handleTouchEnd);
-    }
-    
-    return () => {
-      if (isMobile) {
+      // Add touchmove listener to gridRef for optimized mobile dragging if preferred
+      // gridRef.current?.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+      return () => {
         document.removeEventListener('touchmove', handleTouchMove);
         document.removeEventListener('touchend', handleTouchEnd);
         document.removeEventListener('touchcancel', handleTouchEnd);
-        
-        // Also clean up any lingering timeouts
+        // gridRef.current?.removeEventListener('touchmove', handleTouchMove);
         if (touchTimeoutRef.current) {
           clearTimeout(touchTimeoutRef.current);
         }
-      }
-    };
-  }, [isMobile, handleTouchMove, handleTouchEnd]);
+      };
+    }
+  }, [isMobile, handleTouchMove, handleTouchEnd]); // Removed gridRef from dependencies
 
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (e.key === 'r' || e.key === 'R') {
@@ -497,7 +611,7 @@ const App = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [restartGame]);
 
-  // Cleanup the touching class when touch ends
+  // Cleanup touching class (already seems fine)
   useEffect(() => {
     const cleanupTouching = () => {
       document.body.classList.remove('touching');
@@ -512,42 +626,102 @@ const App = () => {
     };
   }, []);
 
-  // Removed duplicate handleTouchStart declaration
-
-  const handleDragOver = (e) => {
+  // Drag over grid cell (desktop)
+  const handleDragOver = useCallback((e) => {
     e.preventDefault();
-    const row = Number(e.currentTarget.getAttribute('data-row'));
-    const col = Number(e.currentTarget.getAttribute('data-col'));
+    // Optimized: direct calculation if possible, or ensure e.currentTarget is the cell itself
+    const cellElement = e.currentTarget; 
+    const row = Number(cellElement.dataset.row);
+    const col = Number(cellElement.dataset.col);
+
     if (!isNaN(row) && !isNaN(col)) {
-      setPreviewPos({ row, col });
+      if (!previewPos || previewPos.row !== row || previewPos.col !== col) {
+         setPreviewPos({ row, col });
+      }
     }
-  };
+  }, [previewPos]); // Added previewPos
 
-  const handleDragLeave = (e) => {
-    setPreviewPos(null);
-  };
+  // Drag leave grid cell (desktop)
+  const handleDragLeave = useCallback((e) => {
+    // Only set to null if the mouse truly left the grid area, 
+    // not just moving between cells. This might need more sophisticated logic
+    // or rely on handleGridMouseMove for clearing.
+    // For simplicity, current behavior is kept, but could be refined.
+    // setPreviewPos(null); 
+  }, []); // Removed previewPos from deps as it's not used to set state here
 
-  const handleDragStart = (e, index, shape) => {
+  // Drag start from shape preview (desktop)
+  const handleDragStart = useCallback((e, index, shape) => {
     setDraggingShape({ index, shape });
     
     // For compatibility with native HTML5 drag and drop
     // We need to stringify the shape including its color
     e.dataTransfer.setData('shape', JSON.stringify(shape));
-  };
+  }, []);
 
-  // Check if any shape can be placed
+  // Memoize canPlaceAnyShape
   const canPlaceAnyShape = useMemo(() => {
     return shapes.some(shape => shape && canPlaceShape(grid, shape));
   }, [grid, shapes]);
 
-  // Set game over state when no more moves are possible
-  useEffect(() => {
-    if (!canPlaceAnyShape && !gameOver) {
-      setGameOver(true);
+  // Memoize checkGameOver
+  const checkGameOver = useCallback((currentGrid, availableShapes) => {
+    // If no shapes available, game is over
+    if (!availableShapes || availableShapes.length === 0) {
+      return true;
     }
-  }, [canPlaceAnyShape, gameOver]);
 
-  // Update high score only when game is over to preserve previous highScore during game
+    // Check if any shape can be placed anywhere on the grid
+    for (const shape of availableShapes) {
+      if (!shape) { // Add this check
+        continue; // Skip null shapes
+      }
+      const pattern = shape.pattern || shape;
+      
+      // Try all possible positions on the grid
+      for (let row = 0; row <= GRID_SIZE - pattern.length; row++) {
+        for (let col = 0; col <= GRID_SIZE - pattern[0].length; col++) {
+          // Check if shape can be placed at this position
+          let canPlace = true;
+          
+          for (let shapeRow = 0; shapeRow < pattern.length && canPlace; shapeRow++) {
+            for (let shapeCol = 0; shapeCol < pattern[shapeRow].length && canPlace; shapeCol++) {
+              if (pattern[shapeRow][shapeCol]) {
+                const gridRow = row + shapeRow;
+                const gridCol = col + shapeCol;
+                
+                // Check bounds and collision
+                if (gridRow >= GRID_SIZE || gridCol >= GRID_SIZE || currentGrid[gridRow][gridCol]) {
+                  canPlace = false;
+                }
+              }
+            }
+          }
+          
+          // If we found a valid placement, game is not over
+          if (canPlace) {
+            return false;
+          }
+        }
+      }
+    }
+    
+    // No valid moves found for any shape
+    return true;
+  }, []);
+
+  // Game over check effect
+  useEffect(() => {
+    if (shapes.length > 0) {
+      const isGameOver = checkGameOver(grid, shapes);
+      if (isGameOver && !gameOver) {
+        console.log('Game over detected - no valid moves available');
+        setGameOver(true);
+      }
+    }
+  }, [grid, shapes, gameOver, checkGameOver]);
+
+  // High score update effect
   useEffect(() => {
     if (gameOver && score > highScore) {
       setHighScore(score);
@@ -555,25 +729,30 @@ const App = () => {
     }
   }, [gameOver, score, highScore]);
 
+  // Dark mode effect
   useEffect(() => {
     document.body.classList.toggle('dark-mode', darkMode);
     localStorage.setItem('darkMode', darkMode);
   }, [darkMode]);
 
+  // Theme effect
   useEffect(() => {
     document.body.classList.toggle('theme-modern', theme === 'modern');
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
+  // Toggle dark mode
+  const toggleDarkMode = useCallback(() => {
+    setDarkMode(prevMode => !prevMode);
+  }, []);
 
-  const changeTheme = (newTheme) => {
+  // Change theme
+  const changeTheme = useCallback((newTheme) => {
     setTheme(newTheme);
-  };
+  }, []);
 
-  const saveGame = () => {
+  // Save game state
+  const saveGame = useCallback(() => {
     const gameState = {
       grid,
       colorGrid,
@@ -582,9 +761,10 @@ const App = () => {
       difficulty
     };
     localStorage.setItem('gameState', JSON.stringify(gameState));
-  };
+  }, [grid, colorGrid, shapes, score, difficulty]);
 
-  const loadGame = () => {
+  // Load game state
+  const loadGame = useCallback(() => {
     const savedState = localStorage.getItem('gameState');
     if (savedState) {
       try {
@@ -601,19 +781,91 @@ const App = () => {
         restartGame();
       }
     }
-  };
+  }, [restartGame]);
 
-  const handleMenuOpen = () => {
+  // Menu open/close handlers
+  const handleMenuOpen = useCallback(() => {
     setMenuOpen(true);
-    if (isMobile) {
-      document.body.style.overflow = 'hidden';
-    }
-  };
+  }, []);
 
-  const handleMenuClose = () => {
+  const handleMenuClose = useCallback(() => {
     setMenuOpen(false);
-    document.body.style.overflow = '';
-  };
+  }, []);
+
+  // Effect for isLineCleared (already optimized)
+  useEffect(() => {
+    if (isLineCleared) {
+      // This log helps confirm the state change and animation trigger.
+      console.log('isLineCleared is true, loader-logo animation should start.');
+      // DO NOT set isLineCleared to false here.
+      // It is correctly reset by a setTimeout within the checkForCompletedLines function
+      // after the animation duration.
+    }
+  }, [isLineCleared]);
+
+  // Effect for canPlaceAnyShape to trigger game over
+  useEffect(() => {
+    if (!canPlaceAnyShape) {
+      setGameOver(true);
+    }
+  }, [canPlaceAnyShape, gameOver]); // Added gameOver to prevent multiple calls if already over
+
+  // In App.js, when opening/closing settings:
+  useEffect(() => {
+    const backdrop = document.querySelector('.settings-backdrop');
+    const menu = document.querySelector('.settings-menu');
+    if (menuOpen) {
+      backdrop?.classList.add('visible');
+      menu?.classList.add('visible');
+      if (isMobile) {
+        document.body.style.overflow = 'hidden';
+      }
+    } else {
+      backdrop?.classList.remove('visible');
+      menu?.classList.remove('visible');
+      document.body.style.overflow = '';
+    }
+  }, [menuOpen, isMobile]);
+
+  // Effect for Game Over modal visibility
+  useEffect(() => {
+    const gameOverOverlay = document.querySelector('.game-over-overlay');
+    const gameOverModal = document.querySelector('.game-over-modal');
+    if (gameOver) {
+      gameOverOverlay?.classList.add('visible');
+      gameOverModal?.classList.add('visible');
+      if (isMobile) {
+        document.body.style.overflow = 'hidden';
+      }
+    } else {
+      gameOverOverlay?.classList.remove('visible');
+      gameOverModal?.classList.remove('visible');
+      // Only reset body overflow if no other modal is active
+      if (!menuOpen && !isTutorialOpen) {
+        document.body.style.overflow = '';
+      }
+    }
+  }, [gameOver, isMobile, menuOpen, isTutorialOpen]);
+
+  // Effect for Tutorial modal visibility
+  useEffect(() => {
+    const tutorialBackdrop = document.querySelector('.tutorial-backdrop');
+    const tutorialModal = document.querySelector('.tutorial-modal');
+    if (isTutorialOpen) {
+      tutorialBackdrop?.classList.add('visible');
+      tutorialModal?.classList.add('visible');
+      if (isMobile) {
+        document.body.style.overflow = 'hidden';
+      }
+    } else {
+      tutorialBackdrop?.classList.remove('visible');
+      tutorialModal?.classList.remove('visible');
+      // Only reset body overflow if no other modal is active
+      if (!menuOpen && !gameOver) {
+        document.body.style.overflow = '';
+      }
+    }
+  }, [isTutorialOpen, isMobile, menuOpen, gameOver]);
 
   return (
     <div className={`App ${darkMode ? 'dark-mode' : ''} ${isLandscape ? 'landscape' : 'portrait'} ${theme}`}>
@@ -625,7 +877,6 @@ const App = () => {
             <ScoreBoard score={score} highScore={highScore} />
           </div>
         )}
-        {/* Settings gear in header */}
         <button
           className="gear-icon"
           onClick={handleMenuOpen}
@@ -637,7 +888,8 @@ const App = () => {
       
       {isTutorialOpen && (
         <>
-          <div className="tutorial-backdrop"></div>
+          {/* Ensure backdrop and modal have the new .visible class system */}
+          <div className="tutorial-backdrop"></div> 
           <div className="tutorial-modal">
             <button 
               className="tutorial-close-btn" 
@@ -652,7 +904,6 @@ const App = () => {
             <h2>How to Play</h2>
             <p>Drag and drop shapes onto the grid to create complete lines.</p>
             <p>Clear lines horizontally or vertically to score points!</p>
-          
             <h4>Difficulty Levels:</h4>
             <ul>
               <li><strong>Easy:</strong> Simpler shapes like squares and small lines</li>
@@ -660,7 +911,6 @@ const App = () => {
               <li><strong>Hard:</strong> Complex shapes with more blocks and unusual patterns</li>
               <li><strong>Extreme:</strong> All shapes from all difficulty levels mixed together!</li>
             </ul>
-          
             <p>Keyboard shortcuts:</p>
             <ul>
               <li>R - Restart game</li>
@@ -674,7 +924,6 @@ const App = () => {
         </>
       )}
 
-      {/* Settings menu overlay */}
       <SettingsMenu
         isOpen={menuOpen}
         onClose={handleMenuClose}
@@ -688,7 +937,7 @@ const App = () => {
         onChangeTheme={changeTheme}
         onSaveGame={saveGame}
         onLoadGame={loadGame}
-        onOpenTutorial={() => setIsTutorialOpen(true)}
+        onOpenTutorial={useCallback(() => setIsTutorialOpen(true), [])} // Memoize tutorial opener
       />
       
       <div className="game-container">
@@ -703,11 +952,20 @@ const App = () => {
             onDragStart={handleDragStart}
             onTouchStart={handleTouchStart}
             isMobile={isMobile}
-            onShapeClick={handleShapeClick} // Pass the click handler
-            selectedShapeIndex={selectedShape?.index} // Pass the selected shape index
+            onShapeClick={handleShapeClick}
+            selectedShapeIndex={selectedShape?.index}
           />
+          <button
+            className="undo-btn"
+            onClick={handleUndo}
+            disabled={!prevGameState}
+            aria-label="Undo last move"
+          >
+            ↺ Undo
+          </button>
         </div>
-        <div className="grid-board-container">
+        {/* Assign ref to the grid board container */}
+        <div className="grid-board-container" ref={gridRef}> 
           <GridBoard 
             grid={grid} 
             onDrop={handleDrop} 
@@ -716,15 +974,22 @@ const App = () => {
             previewShape={draggingShape && draggingShape.shape}
             previewPos={previewPos}
             isMobile={isMobile}
-            onCellClick={handleCellClick} // Pass the cell click handler
-            onMouseMove={handleGridMouseMove} // Pass the mouse move handler
-            selectedShape={!!selectedShape} // Boolean flag indicating if a shape is selected
-            cellColors={colorGrid} // Pass cell colors for the grid
+            onCellClick={handleCellClick} 
+            onMouseMove={handleGridMouseMove}
+            selectedShape={!!selectedShape} 
+            cellColors={colorGrid}
           />
         </div>
-        {/* Floating preview shape during touch drag */}
+        
         {isMobile && draggingShape && dragPosition && (
-          <div className="floating-drag-shape" style={{ position: 'fixed', left: dragPosition.x, top: dragPosition.y, transform: 'translate(-50%, -50%)', pointerEvents: 'none', zIndex: 1000 }}>
+          <div className="floating-drag-shape" style={{
+            position: 'fixed',
+            left: dragPosition.x,
+            top: dragPosition.y - TOUCH_Y_OFFSET,
+            transform: 'translateX(-50%)',
+            pointerEvents: 'none',
+            zIndex: 1000
+          }}>
             <Shape shape={draggingShape.shape} />
           </div>
         )}
@@ -738,7 +1003,7 @@ const App = () => {
       )}
       <footer className='footer'>
         <p>
-          Created by{' '}
+          Created by{" "}
           <a href="https://walterhouse.co.za" target="_blank" rel="noreferrer">Ashtin Walter</a>
         </p>
       </footer>
