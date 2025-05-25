@@ -46,8 +46,8 @@ const checkForCompletedLines = (grid, colorGrid, setScore, setGrid, setColorGrid
   }
 
   // Clear completed rows and columns
-  const newGrid = [...grid];
-  const newColorGrid = [...colorGrid];
+  const newGrid = grid.map(row => [...row]);
+  const newColorGrid = colorGrid.map(row => [...row]);
 
   // Mark cells for animation before clearing
   for (const rowIndex of completedRows) {
@@ -132,7 +132,10 @@ const App = () => {
   const [colorGrid, setColorGrid] = useState(generateEmptyColorGrid());
   const [shapes, setShapes] = useState(() => getBalancedShapes(3, 'extreme'));
   const [score, setScore] = useState(0);
-  const [highScore, setHighScore] = useState(localStorage.getItem('highScore') || 0);
+  const [highScore, setHighScore] = useState(() => {
+    const saved = parseInt(localStorage.getItem('highScore'), 10);
+    return isNaN(saved) ? 0 : saved;
+  });
   const [difficulty, setDifficulty] = useState('extreme');
   const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'default'); // new state for theme
@@ -544,12 +547,13 @@ const App = () => {
     }
   }, [canPlaceAnyShape, gameOver]);
 
+  // Update high score only when game is over to preserve previous highScore during game
   useEffect(() => {
-    if (score > highScore) {
+    if (gameOver && score > highScore) {
       setHighScore(score);
       localStorage.setItem('highScore', score);
     }
-  }, [score, highScore]);
+  }, [gameOver, score, highScore]);
 
   useEffect(() => {
     document.body.classList.toggle('dark-mode', darkMode);
@@ -616,9 +620,19 @@ const App = () => {
       <header className="app-header">
         <h1>Tenfinity</h1>
         <div className={`loader-logo ${isLineCleared ? 'animate-line-clear' : ''}`}></div>
-        <div className="header-score">
-          <ScoreBoard score={score} highScore={highScore} />
-        </div>
+        {!isMobile && (
+          <div className="header-score">
+            <ScoreBoard score={score} highScore={highScore} />
+          </div>
+        )}
+        {/* Settings gear in header */}
+        <button
+          className="gear-icon"
+          onClick={handleMenuOpen}
+          aria-label="Open settings menu"
+        >
+          ⚙️
+        </button>
       </header>
       
       {isTutorialOpen && (
@@ -660,30 +674,23 @@ const App = () => {
         </>
       )}
 
-      <div className="settings-container">
-        <button 
-          className="gear-icon" 
-          onClick={handleMenuOpen}
-          aria-label="Open settings menu"
-        >
-          ⚙️
-        </button>
-        <SettingsMenu
-          isOpen={menuOpen}
-          onClose={handleMenuClose}
-          isMobile={isMobile}
-          onRestart={restartGame}
-          difficulty={difficulty}
-          onChangeDifficulty={changeDifficulty}
-          darkMode={darkMode}
-          onToggleDarkMode={toggleDarkMode}
-          theme={theme}
-          onChangeTheme={changeTheme}
-          onSaveGame={saveGame}
-          onLoadGame={loadGame}
-          onOpenTutorial={() => setIsTutorialOpen(true)}
-        />
-      </div>
+      {/* Settings menu overlay */}
+      <SettingsMenu
+        isOpen={menuOpen}
+        onClose={handleMenuClose}
+        isMobile={isMobile}
+        onRestart={restartGame}
+        difficulty={difficulty}
+        onChangeDifficulty={changeDifficulty}
+        darkMode={darkMode}
+        onToggleDarkMode={toggleDarkMode}
+        theme={theme}
+        onChangeTheme={changeTheme}
+        onSaveGame={saveGame}
+        onLoadGame={loadGame}
+        onOpenTutorial={() => setIsTutorialOpen(true)}
+      />
+      
       <div className="game-container">
         {isMobile && (
           <div className="mobile-score-display">
