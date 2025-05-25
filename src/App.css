@@ -4,7 +4,7 @@
   --primary-color: #333333;    
   --accent-color: #4d61fc;
   --accent-color-rgb: 77, 97, 252; /* Added RGB values for accent color */     
-  --accent-hover: #3447f2;
+  --accent-hover: rgba(77,97,252,0.8);
   --secondary-color: #ff7e5f;
   --tertiary-color: #6c63ff;
   --tertiary-color-rgb: 108, 99, 255; /* Added RGB values for tertiary color */
@@ -16,12 +16,12 @@
   --dark-cell: #2a2a2a;
   
   /* Size variables */
-  --cell-size: 40px;
+  --cell-size: clamp(20px, 8vw, 40px);
   --cell-size-mobile: 30px;
   --header-height: clamp(60px, 10vh, 100px);
   --grid-size: clamp(300px, 80vw, 600px);
   --cell-size: clamp(25px, calc(var(--grid-size) / 12), 40px);
-  --shape-cell-size: clamp(15px, 3vw, 20px);
+  --shape-cell-size: clamp(12px, 5vw, 20px);
   --max-game-width: min(95vw, 1200px);
   --min-game-width: min(95vw, 300px);
   --game-padding: clamp(10px, 2vw, 30px);
@@ -38,6 +38,9 @@
   --inner-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
   --text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   --glow-effect: 0 0 15px var(--accent-color);
+  --card-bg: rgba(255,255,255,0.1);
+  --card-radius: 8px;
+  --base-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 /* App.css */
@@ -69,11 +72,10 @@ body {
   grid-template-rows: none;
   gap: 1rem;
   overflow-x: hidden;
-  background-color: rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  backdrop-filter: blur(16px);
-  box-shadow: var(--card-shadow);
-  position: relative;
+  background-color: var(--card-bg);
+  border-radius: var(--card-radius);
+  box-shadow: var(--base-shadow);
+  backdrop-filter: blur(8px);
 }
 
 /* New header styling for a sleek look */
@@ -179,16 +181,13 @@ body {
   grid-template-columns: repeat(10, 1fr);
   grid-template-rows: repeat(10, 1fr);
   gap: 4px;
-  background: rgba(255, 255, 255, 0.07);
+  background: transparent;
   padding: 12px;
   border-radius: 20px;
   width: 100%;
   height: 100%;
   aspect-ratio: 1;
-  box-shadow: 
-    0 12px 32px rgba(0, 0, 0, 0.12),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(12px);
+  box-shadow: none;
   position: relative;
   overflow: hidden;
 }
@@ -205,9 +204,9 @@ body {
 .grid-cell {
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.06);
-  border: 1.5px solid rgba(255, 255, 255, 0.15);
-  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: none;
   transition: all 0.3s var(--animation-timing);
   position: relative;
   overflow: hidden;
@@ -226,9 +225,7 @@ body {
 .grid-cell.filled {
   /* Allow inline shape color to show instead of default accent color */
   transform: scale(0.95);
-  box-shadow: 
-    0 0 20px var(--accent-color),
-    inset 0 0 5px rgba(255, 255, 255, 0.5);
+  box-shadow: none;
   border-color: transparent;
   z-index: 2;
 }
@@ -306,6 +303,9 @@ body {
 .score-board {
   font-size: 1.5em;
   margin-bottom: 20px;
+  background: transparent;
+  box-shadow: none;
+  border: none;
 }
 
 .game-over {
@@ -608,6 +608,9 @@ body {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
   margin: 10px 0;
+  background: transparent;
+  box-shadow: none;
+  border: none;
 }
 
 .dark-mode .score-board {
@@ -673,9 +676,7 @@ body {
 .grid-cell.filled {
   /* Allow inline shape color to show instead of default accent color */
   transform: scale(0.95);
-  box-shadow: 
-    0 0 20px var(--accent-color),
-    inset 0 0 5px rgba(255, 255, 255, 0.5);
+  box-shadow: none;
   border-color: transparent;
   z-index: 2;
 }
@@ -729,2064 +730,152 @@ body {
   letter-spacing: 0.02em;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  :root {
-    --cell-size: var(--cell-size-mobile);
-  }
-  .game-container {
-    padding: 0.25rem;
-    gap: 0.5rem;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-  }
-
-  .grid-board-container {
-    max-width: 95vmin;
-    padding: 0;
-  }
-
-  .shapes-container {
-    max-width: 100%;
-    margin: 0;
-  }
-
-  .grid-board {
-    padding: 4px;
-    gap: 1px;
-  }
-
-  .grid-board {
-    grid-template-columns: repeat(10, var(--cell-size));
-    grid-template-rows: repeat(10, var(--cell-size));
-    margin: 10px auto;
-    max-width: 95vmin;
-  }
-  .grid-cell {
-    width: var(--cell-size);
-    height: var(--cell-size);
-  }
-  .shape {
-    grid-template-columns: repeat(5, 15px);
-    grid-template-rows: repeat(5, 15px);
-  }
-  .shape-cell {
-    width: 15px;
-    height: 15px;
-  }
-  .score-board {
-    font-size: 1.2em;
-  }
-  .restart-btn {
-    padding: 8px 16px;
-    font-size: 0.9em;
-  }
-  .game-container {
-    gap: 0.5rem;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
-  }
-
-  .shape-previews {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    align-items: center;
-  }
-
-  .settings-menu {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    max-width: 300px;
-    z-index: 1000;
-    max-height: 80vh;
-  }
-
-  .settings-container::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
-  }
-
-  .settings-container.menu-open::before {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .shape {
-    touch-action: none; /* Better touch handling */
-  }
-
-  .grid-cell {
-    touch-action: none;
-  }
-
-  .app-header {
-    padding: 0.5rem;
-    gap: 0.5rem;
-    grid-template-columns: auto 1fr auto auto;
-  }
-
-  .loader-logo {
-    width: 30px;
-    height: 30px;
-    margin: 0 0.5rem;
-  }
-
-  .header-score .score-board {
-    font-size: 0.8rem;
-    padding: 0.25rem 0.5rem;
-  }
-
-  .game-container {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-    gap: 1rem;
-  }
-}
-
-/* Landscape mode optimizations */
-@media (max-height: 600px) and (orientation: landscape) {
-  .App {
-    grid-template-rows: auto 1fr;
-  }
-
-  .game-container {
-    flex-direction: row;
-    gap: 2vw;
-    grid-template-columns: 1fr auto;
-    gap: 2vw;
-  }
-
-  .grid-board {
-    max-height: 80vh;
-    width: auto;
-  }
-
-  .shape-previews {
-    flex-direction: column;
-    grid-template-columns: 1fr;
-    height: 100%;
-  }
-
-  .score-board {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    font-size: 1rem;
-  }
-}
-
-.settings-container {
+/* Game Over Overlay and Modal Styles */
+.game-over-overlay {
   position: fixed;
-  top: var(--game-padding);
-  right: var(--game-padding);
-  z-index: 1000;
-}
-
-.gear-icon {
-  font-size: 24px;
-  cursor: pointer;
-  width: 30px;           /* fixed width to keep layout consistent */
-  text-align: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  font-size: 1.5rem;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--primary-bg);
-  border: none;
-  border-radius: 50%;
-  box-shadow: var(--inner-shadow);
-  transition: transform var(--transition-speed), background var(--transition-speed);
-}
-
-.gear-icon:hover {
-  transform: rotate(90deg);
-  background: var(--accent-hover);
-}
-
-.settings-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 90;
   opacity: 0;
-  animation: fadeIn 0.3s forwards;
-  backdrop-filter: blur(2px);
-  transition: opacity var(--transition-speed);
   pointer-events: none;
+  transition: opacity 0.4s ease;
+  z-index: 1000;
 }
-
-.settings-backdrop.active {
+.game-over-overlay.fully-visible {
   opacity: 1;
   pointer-events: all;
 }
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.settings-menu {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.95);
-  width: var(--menu-width);
-  max-width: 90vw;
-  max-height: 85vh;
-  display: grid;
-  grid-template-rows: auto 1fr;
+.game-over-modal {
   background: var(--primary-bg);
   color: var(--primary-color);
+  padding: 2rem;
   border-radius: 12px;
   box-shadow: var(--card-shadow);
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity var(--transition-speed), transform var(--transition-speed);
-  animation: menuAppear 0.3s forwards;
-  display: flex;
-  flex-direction: column;
+  text-align: center;
+  max-width: 90%;
+  width: 400px;
+  animation: fadeInScale 0.5s ease forwards;
 }
-
-.settings-menu.active {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+@keyframes fadeInScale {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
-
-@keyframes menuAppear {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -48%) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
+.game-over-modal h2 {
+  margin-top: 0;
+  font-size: 2rem;
 }
-
-.menu-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  background: var(--accent-color);
-  color: white;
-  border-radius: 12px 12px 0 0;
-}
-
-.menu-title {
-  margin: 0;
-  font-size: 1.4rem;
-  font-weight: 500;
-}
-
-.close-btn {
-  background: transparent;
-  border: none;
-  font-size: 1.2rem;
-  color: white;
-  cursor: pointer;
-  width: 30px !important;
-  height: 30px;
+.game-over-modal .new-high-score {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  font-size: 1.25rem;
 }
-
-.close-btn:hover {
-  background: rgba(0, 0, 0, 0.2);
+.game-over-modal .score-details {
+  margin: 1rem 0;
+  text-align: left;
 }
-
-/* Tab navigation */
-.settings-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--secondary-color);
+.game-over-modal .score-label {
+  font-weight: 600;
 }
-
-.settings-tab {
-  flex: 1;
-  padding: 0.75rem;
-  background: none;
-  border: none;
-  font: inherit;
-  cursor: pointer;
-  text-align: center;
-  transition: background var(--transition-speed);
+.game-over-modal .score-value {
+  float: right;
 }
-
-.settings-tab.active {
-  background: var(--secondary-color);
-  color: #fff;
-}
-
-/* Content area */
-.settings-content {
-  overflow-y: auto;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* Panel grouping */
-.settings-panel {
-  display: none;
-}
-
-.settings-panel.active {
-  display: block;
-}
-
-/* Utility classes */
-.panel-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-/* Buttons */
-.menu-btn {
-  padding: 0.75rem 1rem;
-  background: var(--accent-color);
-  color: #fff;
+.game-over-modal .restart-btn,
+.game-over-modal .share-btn {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
   border: none;
   border-radius: 6px;
+  background: var(--accent-color);
+  color: #fff;
   cursor: pointer;
-  transition: background var(--transition-speed);
+  box-shadow: var(--inner-shadow);
+  transition: background-color 0.3s, transform 0.2s;
 }
-
-.menu-btn:hover {
+.game-over-modal .restart-btn:hover,
+.game-over-modal .share-btn:hover {
   background: var(--accent-hover);
+  transform: translateY(-2px);
+}
+@media (max-width: 480px) {
+  .game-over-modal {
+    width: 90%;
+    padding: 1.5rem;
+  }
+  .game-over-modal h2 {
+    font-size: 1.5rem;
+  }
+  .game-over-modal .restart-btn,
+  .game-over-modal .share-btn {
+    width: 100%;
+  }
 }
 
-/* Touch device optimizations */
-@media (hover: none) {
-  .grid-cell, .shape {
-    cursor: pointer;
-  }
-
-  .menu-btn {
-    padding: 1rem;
-    min-height: 44px; /* iOS minimum touch target */
-  }
-
-  .settings-container::before {
-    background: rgba(0, 0, 0, 0.7);
-  }
+/* Tutorial Modal Styles */
+.tutorial-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 900;
 }
-
-/* New styles for animations and modals */
 .tutorial-modal {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(30, 30, 50, 0.85);
-  backdrop-filter: blur(20px);
-  padding: clamp(1.75rem, 5vw, 3rem);
-  border-radius: 24px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  background: var(--primary-bg);
+  color: var(--primary-color);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  max-width: 90%;
+  width: 360px;
   z-index: 1000;
-  max-width: min(550px, 92%);
-  min-height:50vh;
-  max-height: 100vh; /* Increased from 85vh to 90vh for more content space */
   overflow-y: auto;
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  animation: modalIn 0.5s var(--animation-timing);
-  position: relative;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  max-height: 80vh;
 }
-
-.tutorial-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.65);
-  z-index: 999;
-  animation: fadeIn 0.4s forwards;
-  backdrop-filter: blur(4px);
+.tutorial-modal h2 {
+  margin-top: 0;
+  font-size: 1.5rem;
 }
-
+.tutorial-modal p,
+.tutorial-modal ul {
+  text-align: left;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
 .tutorial-close-btn {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
-  color: white;
-  width: 36px; /* Reduced from 44px */
-  height: 36px; /* Reduced from 44px */
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem; /* Reduced from 1.2rem */
-  cursor: pointer;
-  transition: all 0.25s ease;
-  z-index: 10;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-.tutorial-close-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: rotate(90deg);
-}
-
-@keyframes modalIn {
-  0% { opacity: 0; transform: translate(-50%, -48%) scale(0.92); }
-  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-}
-
-/* Make tutorial content more mobile-friendly */
-.tutorial-modal h2 {
-  font-size: clamp(1.5rem, 5vw, 2rem);
-  margin: 0 0 1.5rem;
-  padding-right: 36px; /* Make space for the close button */
-  background: linear-gradient(90deg, var(--accent-color), var(--tertiary-color));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.tutorial-modal p {
-  margin: 0.8rem 0;
-  font-size: clamp(0.9rem, 4vw, 1.1rem);
-  line-height: 1.6;
-}
-
-.tutorial-modal ul {
-  list-style: none;
-  padding: 0;
-  margin: 1.5rem 0;
-}
-
-.tutorial-modal li {
-  padding: 0.5rem 0 0.5rem 1.8rem;
-  position: relative;
-  font-size: clamp(0.85rem, 4vw, 1.05rem);
-  line-height: 1.5;
-}
-
-.tutorial-modal li::before {
-  content: "→";
-  position: absolute;
-  left: 0;
-  color: var(--tertiary-color);
-  font-weight: bold;
-}
-
-.tutorial-modal button {
-  background: var(--accent-color);
-  color: white;
-  border: none;
-  padding: 0.8rem 2rem;
-  font-size: 1.1rem;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 600;
-  margin-top: 1.5rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 100px;
-  min-height: 44px; /* iOS minimum touch target */
-}
-
-.tutorial-modal button:hover {
-  background: var(--accent-hover);
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-}
-
-.dark-mode .tutorial-modal {
-  background: rgba(20, 20, 30, 0.8);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Additional mobile optimizations */
-@media (max-width: 768px) {
-  .tutorial-modal {
-    padding: 1.5rem;
-    max-height: 80vh;
-  }
-
-  .tutorial-modal ul {
-    margin: 1rem 0;
-  }
-
-  .tutorial-modal li {
-    padding: 0.4rem 0 0.4rem 1.5rem;
-  }
-  
-  .tutorial-modal button {
-    margin-top: 1rem;
-    padding: 0.7rem 1.5rem;
-  }
-  
-  /* Improve scrolling on mobile */
-  .tutorial-modal::-webkit-scrollbar {
-    width: 4px;
-  }
-  
-  .tutorial-modal::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-  }
-}
-
-/* Enhanced shape placement animations - more subtle approach */
-@keyframes shapePlace {
-  0% { 
-    transform: scale(1.05); 
-    opacity: 0.7; 
-    box-shadow: 0 0 12px var(--accent-color);
-  }
-  50% { 
-    transform: scale(0.98); 
-    opacity: 0.9;
-  }
-  100% { 
-    transform: scale(1); 
-    opacity: 1;
-  }
-}
-
-/* Target only the newly placed cells instead of the whole board */
-.grid-cell.filled.newly-placed {
-  animation: shapePlace 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-
-/* Subtle glow effect for placed shapes */
-.grid-cell.filled.newly-placed::after {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  background: transparent;
-  opacity: 0;
-  box-shadow: 0 0 8px 2px var(--accent-color);
-  animation: glowFade 0.8s ease-out forwards;
-}
-
-@keyframes glowFade {
-  0% { opacity: 0.7; }
-  100% { opacity: 0; }
-}
-
-/* New and updated styles for enhanced Tenfinity game */
-
-/* Shape dragging visual feedback */
-.shape.dragging {
-  opacity: 0.7;
-  transform: scale(1.05);
-  cursor: grabbing;
-}
-
-/* Enhanced shape placement animations */
-@keyframes shapePlace {
-  0% { transform: scale(1.1); background-color: rgba(59, 130, 246, 0.7); }
-  50% { transform: scale(0.95); }
-  100% { transform: scale(1); }
-}
-
-.shape-placed .grid-cell.filled:not(.cell-cleared) {
-  animation: shapePlace 0.3s ease-out;
-}
-
-/* Better line clearing animations */
-@keyframes lineClearing {
-  0% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.1); background-color: white; }
-  100% { opacity: 0; transform: scale(0); }
-}
-
-.cell-cleared {
-  animation: lineClearing 0.5s ease-out forwards;
-}
-
-/* Enhanced score board styling */
-.score-board {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 10px 20px;
-  background: linear-gradient(120deg, var(--accent-color), var(--accent-hover));
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.score-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 10px;
-}
-
-.score-label {
-  font-size: 0.8em;
-  opacity: 0.9;
-  margin-bottom: 2px;
-}
-
-.score-value {
-  font-size: 1.2em;
-  font-weight: bold;
-}
-
-/* Improved game over overlay */
-.game-over-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  opacity: 0;
-  animation: fadeIn 0.5s ease-out forwards;
-}
-
-.game-over-overlay.fully-visible {
-  opacity: 1;
-}
-
-@keyframes fadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
-}
-
-.game-over-modal {
-  background: white;
-  border-radius: 16px;
-  padding: 2rem;
-  text-align: center;
-  max-width: min(90%, 400px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  transform: translateY(20px);
-  animation: slideUp 0.5s ease-out forwards;
-}
-
-@keyframes slideUp {
-  0% { transform: translateY(40px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
-}
-
-.new-high-score {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 15px 0;
-  color: #f59e0b;
-  font-weight: bold;
-  font-size: 1.2em;
-}
-
-.celebration {
-  font-size: 1.5em;
-  margin: 0 10px;
-  animation: bounce 1s infinite alternate;
-}
-
-@keyframes bounce {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.3) rotate(10deg); }
-}
-
-.score-details {
-  margin: 20px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.final-score, .high-score, .score-percentage {
-  font-size: 1.1em;
-}
-
-.restart-btn, .share-btn {
-  padding: 12px 25px;
-  margin: 10px 5px;
-  font-size: 1.1em;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-}
-
-.restart-btn {
-  background-color: var(--accent-color);
-  color: white;
-}
-
-.restart-btn:hover {
-  background-color: var(--accent-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.share-btn {
-  background-color: #10b981;
-  color: white;
-}
-
-.share-btn:hover {
-  background-color: #059669;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* Grid cell container styling */
-.grid-cell-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Shape selection and click-to-place styles */
-.shape.selected {
-  transform: scale(1.1);
-  box-shadow: 0 0 15px var(--accent-color), 0 0 25px rgba(59, 130, 246, 0.4);
-  transition: transform 0.2s ease, box-shadow 0.3s ease;
-  position: relative;
-  z-index: 10;
-  cursor: grabbing;
-}
-
-.shape-selected .grid-cell-container {
-  cursor: pointer;
-}
-
-.shape-selected .grid-cell-container:hover {
-  background-color: rgba(59, 130, 246, 0.1);
-  border-radius: 6px;
-}
-
-/* Animated cursor to indicate the shape is "in hand" */
-.shape-selected {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='%233b82f6' opacity='0.7'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3C/svg%3E") 12 12, auto;
-}
-
-/* Pulsing effect for selected shape */
-@keyframes selectedPulse {
-  0% { box-shadow: 0 0 10px var(--accent-color), 0 0 20px rgba(59, 130, 246, 0.3); }
-  50% { box-shadow: 0 0 15px var(--accent-color), 0 0 30px rgba(59, 130, 246, 0.5); }
-  100% { box-shadow: 0 0 10px var(--accent-color), 0 0 20px rgba(59, 130, 246, 0.3); }
-}
-
-.shape.selected {
-  animation: selectedPulse 2s infinite;
-}
-
-/* Mobile-specific adjustments */
-@media (max-width: 768px) {
-  .shape.selected {
-    transform: scale(1.05);
-    box-shadow: 0 0 10px var(--accent-color);
-  }
-  
-  .shape-selected .grid-cell-container:active {
-    background-color: rgba(59, 130, 246, 0.2);
-  }
-}
-
-/* Settings Menu Styles */
-.settings-container {
-  position: absolute;
-  top: 40px;
-  right: 20px;
-  z-index: 100;
-}
-
-.gear-icon {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  cursor: pointer;
-  transition: transform 0.3s, background-color 0.3s;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px);
-}
-
-.gear-icon:hover {
-  transform: rotate(30deg);
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.settings-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 90;
-  opacity: 0;
-  animation: fadeIn 0.3s forwards;
-  backdrop-filter: blur(2px);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.settings-menu {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: var(--menu-width);
-  max-width: 90vw;
-  max-height: 85vh;
-  overflow-y: auto;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  padding: 0;
-  z-index: 100;
-  animation: menuAppear 0.3s forwards;
-  display: flex;
-  flex-direction: column;
-}
-
-@keyframes menuAppear {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -48%) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-.menu-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  background: var(--accent-color);
-  color: white;
-  border-radius: 12px 12px 0 0;
-}
-
-.menu-title {
-  margin: 0;
-  font-size: 1.4rem;
-  font-weight: 500;
-}
-
-.close-btn {
+  top: 8px;
+  right: 8px;
   background: transparent;
   border: none;
   font-size: 1.2rem;
-  color: white;
   cursor: pointer;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s;
 }
 
-.close-btn:hover {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.menu-section {
-  padding: 15px 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.section-title {
-  margin: 0 0 15px 0;
-  font-size: 1.1rem;
-  color: #555;
-}
-
-.option-title {
-  margin: 15px 0 10px 0;
-  font-size: 0.9rem;
-  color: #777;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.menu-btn {
-  background: #f5f5f5;
-  border: none;
-  border-radius: 6px;
-  padding: 12px 15px;
-  font-size: 0.95rem;
-  color: #333;
-  cursor: pointer;
-  transition: all 0.2s;
-  width: 100%;
-  margin-bottom: 8px;
-  text-align: left;
-}
-
-.menu-btn:hover {
-  background: #e9e9e9;
-}
-
-.menu-btn.active {
-  background: var(--accent-color);
-  color: white;
-}
-
-.primary-btn {
-  background: var(--accent-color);
-  color: white;
-  font-weight: bold;
-}
-
-.primary-btn:hover {
-  background: var(--accent-hover);
-}
-
-.toggle-btn {
-  display: flex;
-  align-items: center;
-}
-
-.toggle-icon {
-  margin-right: 10px;
-  font-size: 1.1rem;
-}
-
-.difficulty-buttons,
-.theme-buttons,
-.save-load-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  gap: 8px;
-}
-
-.help-btn {
-  margin: 20px;
-  background: #f0f0f0;
-}
-
-/* Dark mode adjustments */
-.dark-mode .settings-menu {
-  background: #222;
-  color: #eee;
-}
-
-.dark-mode .menu-section {
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.dark-mode .section-title {
-  color: #ddd;
-}
-
-.dark-mode .option-title {
-  color: #aaa;
-}
-
-.dark-mode .menu-btn {
-  background: #333;
-  color: #eee;
-}
-
-.dark-mode .menu-btn:hover {
-  background: #444;
-}
-
-.dark-mode .menu-btn.active {
-  background: var(--accent-color);
-}
-
-.dark-mode .help-btn {
-  background: #2a2a2a;
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  .settings-menu {
-    width: 90vw;
-    max-height: 80vh;
-  }
-  
-  .menu-section {
-    padding: 12px 15px;
-  }
-  
-  .menu-btn {
-    padding: 12px;
-    min-height: 44px; /* iOS minimum touch target */
-  }
-  
-  .difficulty-buttons,
-  .theme-buttons,
-  .save-load-buttons {
-    grid-template-columns: 1fr;
-  }
-
-  /* Reduce header size and spacing */
-  .app-header {
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-    gap: 0.5rem;
-    height: auto;
-    min-height: 40px;
-  }
-  
-  .app-header h1 {
-    font-size: clamp(1.5rem, 5vw, 2rem);
-  }
-  
-  .loader-logo {
-    width: 25px;
-    height: 25px;
-    margin: 0 0.25rem;
-  }
-  
-  /* Improve mobile score display */
-  .mobile-score-display {
-    width: 100%;
-    margin: 0 0 0.25rem;
-    padding: 0;
-  }
-  
-  .mobile-score-display .score-board {
-    width: 100%;
-    margin: 0 auto;
-    padding: 0.5rem;
-  }
-  
-  /* Better grid board container */
-  .grid-board-container {
-    width: 95%;
-    height: auto;
-    aspect-ratio: 1;
-    max-width: min(95vw, 95vh);
-    margin: 0 auto;
-    padding: 0;
-  }
-  
-  .grid-board {
-    padding: 6px;
-    gap: 2px;
-  }
-  
-  /* Adjust shapes container */
-  .shapes-container {
-    width: 95%;
-    min-width: unset;
-    max-width: 95%;
-    margin: 0 auto 0.25rem;
-    padding: 0.5rem;
-    border-radius: 14px;
-  }
-  
-  .shape-previews {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: 1fr;
-    gap: 0.5rem;
-  }
-  
-  .shape-preview {
-    padding: 0.4rem;
-    margin: 0;
-    max-height: 60px;
-  }
-}
-
-/* Touch device optimizations */
-@media (hover: none) {
-  .menu-btn, .settings-tab, .theme-option {
-    transition: opacity 0.2s ease;
-  }
-  
-  .menu-btn:hover, .settings-tab:hover, .theme-option:hover {
-    transform: none;
-  }
-  
-  .menu-btn:active, .settings-tab:active, .theme-option:active {
-    opacity: 0.7;
-  }
-  
-  .settings-tab {
-    padding: 1rem 0.5rem;
-  }
-}
-
-/* Base Difficulty Button Styles */
-.base-difficulty-container {
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.difficulty-separator {
-  margin: 10px 0;
-  padding: 5px 10px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: bold;
-}
-
-.base-difficulty-btn {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 15px 10px;
-  background: linear-gradient(135deg, rgba(255, 0, 0, 0.1), rgba(0, 0, 255, 0.1));
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  margin-top: 5px;
-  position: relative;
-  overflow: hidden;
-}
-
-.base-difficulty-btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, 
-    rgba(66, 133, 244, 0.2), 
-    rgba(234, 67, 53, 0.2), 
-    rgba(251, 188, 5, 0.2), 
-    rgba(52, 168, 83, 0.2));
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.base-difficulty-btn:hover::before {
-  opacity: 1;
-}
-
-.base-difficulty-btn.active {
-  background: linear-gradient(135deg, rgba(255, 0, 0, 0.2), rgba(0, 0, 255, 0.2));
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-}
-
-.base-difficulty-btn .difficulty-icon {
-  font-size: 1.8rem;
-  margin-bottom: 10px;
-}
-
-.base-difficulty-btn .btn-label {
-  font-size: 1.15rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.base-difficulty-btn .btn-description {
-  font-size: 0.85rem;
-  opacity: 0.8;
-  font-style: italic;
-}
-
-.dark-mode .base-difficulty-btn {
-  background: linear-gradient(135deg, rgba(255, 0, 0, 0.15), rgba(0, 0, 255, 0.15));
-}
-
-.dark-mode .base-difficulty-btn.active {
-  background: linear-gradient(135deg, rgba(255, 0, 0, 0.3), rgba(0, 0, 255, 0.3));
-}
-
-/* Enhanced mobile layout */
-@media (max-width: 768px) {
-  .App {
-    padding: var(--game-padding);
-    height: 100vh;
-    min-height: -webkit-fill-available;
-    box-sizing: border-box;
-    border-radius: 16px;
-  }
-  
-  .game-container {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-    gap: 0.75rem;
-  }
-  
-  .shapes-container {
-    min-width: 100%;
-    max-width: 100%;
-    margin: 0;
-    padding: 0.8rem;
-    border-radius: 14px;
-  }
-  
-  .shape-previews {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: 1fr;
-    gap: 0.75rem;
-  }
-  
-  .shape-preview {
-    padding: 0.5rem;
-    margin: 0;
-    max-height: 80px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .header-score {
-    display: none; /* Hide header score on mobile */
-  }
-  
-  /* Show score at the top of the game container instead */
-  .game-container::before {
-    content: '';
-    grid-column: 1;
-    display: block;
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
-  
-  /* Footer adjustments for mobile */
-  .footer {
-    position: static;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    padding: 8px 0;
-    font-size: 0.8rem;
-    opacity: 0.7;
-    z-index: 40;
-    transition: opacity 0.3s ease;
-  }
-  
-  .footer:hover {
-    opacity: 0.9;
-  }
-  
-  /* Improved touch targets for all interactive elements */
-  .gear-icon,
-  .tutorial-close-btn,
-  .close-btn,
-  .settings-tab,
-  .menu-btn {
-    min-width: 44px;
-    min-height: 44px;
-  }
-  
-  /* Fix mobile orientation issue with grid size */
-  .grid-board-container {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1;
-    max-width: min(85vw, 85vh);
-  }
-  
-  /* Make shape cells bigger for easier touch on mobile */
-  .shape-cell {
-    width: calc(var(--shape-cell-size) * 1.2);
-    height: calc(var(--shape-cell-size) * 1.2);
-  }
-}
-
-/* Improved mobile layout for better space utilization */
-@media (max-width: 768px) {
-  :root {
-    --cell-size: var(--cell-size-mobile);
-  }
-  
-  .App {
-    padding: var(--game-padding);
-    height: 100vh;
-    min-height: -webkit-fill-available;
-    box-sizing: border-box;
-    border-radius: 16px;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .app-header {
-    padding: 0.5rem 1rem;
-    margin-bottom: 0.5rem;
-    height: auto;
-    min-height: 50px;
-  }
-  
-  .app-header h1 {
-    font-size: clamp(1.5rem, 5vw, 2rem);
-  }
-  
-  /* Better organized game layout */
-  .game-container {
-    
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0;
-    margin: 0;
-  }
-  
-  /* Add a visible scoreboard at the top of the game area */
-  .game-container::before {
-    content: '';
-    display: none;
-  }
-  
-  .mobile-score-display {
-    width: 100%;
-    margin: 0 0 0.5rem;
-    display: flex;
-    justify-content: center;
-  }
-  
-  /* Make shapes take less vertical space */
-  .shapes-container {
-    width: 95%;
-    min-width: unset;
-    max-width: 95%;
-    margin: 0 auto 0.5rem;
-    padding: 0.75rem;
-    border-radius: 14px;
-  }
-  
-  .shape-previews {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: 1fr;
-    gap: 0.5rem;
-  }
-  
-  .shape-preview {
-    padding: 0.4rem;
-    margin: 0;
-    max-height: 70px;
-  }
-  
-  /* Make the grid board fill available space */
-  .grid-board-container {
-    width: 95%;
-    height: auto;
-    aspect-ratio: 1;
-    max-width: min(90vw, 90vh);
-    margin: 0 auto;
-  }
-  
-  .grid-board {
-    padding: 8px;
-    gap: 2px;
-  }
-  
-  /* Compact footer */
-  .footer {
-    padding: 6px 0;
-    font-size: 0.75rem;
-    opacity: 0.6;
-  }
-}
-
-/* Mobile Touch Interaction Optimizations */
-@media (max-width: 768px) {
-  /* Enhance touch feedback - provide better visual feedback */
-  .shape-preview:active {
-    transform: scale(1.05);
-    transition: transform 0.15s ease-out;
-  }
-  
-  /* Prevent accidental text selection during touch */
-  .shape, .grid-board, .grid-cell-container, .shape-preview {
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-  }
-  
-  /* Optimize shape for touch - make hitboxes larger */
-  .shape {
-    padding: 6px; /* Increase padding for larger touch area */
-  }
-  
-  /* Improved touch preview feedback */
-  .grid-cell.preview {
-    animation: touchPulse 1s infinite alternate;
-    background-color: rgba(var(--accent-color-rgb), 0.4);
-    border: 2px solid var(--accent-color);
-  }
-  
-  /* Special animation for touch preview */
-  @keyframes touchPulse {
-    0% { opacity: 0.7; transform: scale(0.98); }
-    100% { opacity: 1; transform: scale(1); }
-  }
-  
-  /* Make touch targets larger */
-  .grid-cell-container {
-    touch-action: manipulation; /* Improves touch actions on mobile */
-  }
-  
-  /* Enhanced feedback for shape being dragged on mobile */
-  body.touching .shape-preview .shape.selected {
-    transform: scale(1.1);
-    opacity: 0.8;
-    box-shadow: 0 0 20px var(--accent-color);
-    animation: none; /* Disable pulsing animation while actively touching */
-  }
-  
-  /* Add hardware acceleration for smoother animations */
-  .grid-cell,
-  .shape,
-  .shape-cell.filled,
-  .grid-cell.preview,
-  .grid-cell.filled {
-    will-change: transform, opacity;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-  
-  /* Reduce animation complexity for weaker devices */
-  .grid-cell.newly-placed::after {
-    display: none; /* Disable complex glow animations on mobile */
-  }
-  
-  /* Simplified animations for mobile */
-  .grid-cell.filled.newly-placed {
-    animation-duration: 0.3s; /* Faster animation on mobile */
-  }
-}
-
-/* Specific iOS enhancements */
-@supports (-webkit-touch-callout: none) {
-  /* iOS-specific fixes */
-  .shape-preview, .grid-cell-container {
-    cursor: pointer; /* Better indication of touchability on iOS */
-  }
-  
-  /* Disable hover effects on iOS - they create lag after touch */
-  .shape-preview:hover {
-    transform: none;
-    box-shadow: none;
-  }
-  
-  /* Fix for iOS scroll bounce issue */
-  body {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
-  
-  .App {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-  }
-  
-  /* Prevent iOS long press popups */
-  * {
-    -webkit-touch-callout: none;
-  }
-}
-
-/* Mobile Grid Optimizations */
-.mobile-grid {
-  touch-action: manipulation; /* Improved touch scrolling behavior */
-  -webkit-overflow-scrolling: touch;
-  -webkit-tap-highlight-color: transparent; /* Remove the tap highlight on iOS */
-}
-
-.mobile-grid .grid-cell-container {
-  touch-action: none; /* Prevent scrolling when touching cells */
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Enhanced touch feedback for mobile */
-.mobile-grid .grid-cell-container:active {
-  background-color: rgba(var(--accent-color-rgb), 0.1);
-  border-radius: 8px;
-}
-
-/* Improve shape preview visibility on mobile */
-.mobile-grid .grid-cell.preview {
-  background-color: rgba(var(--accent-color-rgb), 0.5); /* More visible */
-  border: 2px solid var(--accent-color);
-  box-shadow: 0 0 15px rgba(var(--accent-color-rgb), 0.8); /* Stronger glow */
-  opacity: 0.9; /* Better visibility */
-  transform: scale(1.05); /* Slightly larger for touch */
-}
-
-/* Prevent iOS double-tap to zoom */
-.grid-board, 
-.shape-preview, 
-.grid-cell-container,
-.shape {
-  touch-action: manipulation;
-}
-
-/* Fix for handling touch events on iOS Safari */
-@supports (-webkit-touch-callout: none) {
-  .mobile-grid .grid-cell-container {
-    will-change: transform; /* Hardware acceleration for smoother performance */
-  }
-  
-  .shape-preview {
-    touch-action: none; /* Prevent accidental scrolling when dragging shapes */
-  }
-  
-  /* Fix for iOS overscroll effect */
-  .App {
-    overflow: hidden;
-    -webkit-overflow-scrolling: auto;
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-  }
-  
-  /* Enhanced handling for iOS Safari */
-  body.touching {
-    overflow: hidden;
-  }
-  
-  /* More responsive tap feedback */
-  .shape-preview:active, 
-  .mobile-grid .grid-cell-container:active {
-    transform: scale(0.98);
-    transition: transform 0.1s ease-out;
-  }
-}
-
-/* Android-specific optimizations */
-@supports not (-webkit-touch-callout: none) {
-  .mobile-grid .grid-cell.preview {
-    animation: androidPreviewPulse 1.5s infinite alternate;
-  }
-  
-  @keyframes androidPreviewPulse {
-    0% { opacity: 0.8; transform: scale(1); }
-    100% { opacity: 1; transform: scale(1.1); }
-  }
-}
-
-/* Ensure smooth transitions on mobile */
-.shape-placed .grid-cell.filled {
-  animation-duration: 0.25s !important; /* Faster animations on mobile */
-}
-
-/* Prevent glitchy touch selection */
-.game-container,
-.grid-board-container,
-.shapes-container,
-.grid-board,
-.grid-cell-container,
-.shape-preview,
-.shape {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-/* Fix for Safari elastic scroll */
-html, body {
+/* Settings Menu Backdrop */
+.settings-backdrop {
   position: fixed;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  overscroll-behavior: none;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 900;
+}
+.settings-menu {
+  position: fixed;
+  top: 50%;
+  right: 50%;
+  transform: translate(50%, -50%);
+  z-index: 1000;
 }
 
-/* Improved visual feedback when a shape is being dragged */
-body.touching .shape-preview.selected {
-  transform: scale(1.05);
-  box-shadow: 0 0 20px var(--accent-color);
-  opacity: 0.8;
-}
-
-/* Enhanced mobile touch interaction styles */
-.shape.dragging, 
-body.touching .shape-preview .shape {
-  will-change: transform, opacity;
-  transform: scale(1.1);
-  transition: none !important; /* Remove transitions during active dragging for immediate response */
-  box-shadow: 0 0 20px var(--accent-color);
-  opacity: 0.85;
-  z-index: 100;
-  pointer-events: none; /* Prevent touch events from being blocked by the shape itself */
-}
-
-/* Improve touch target handling */
-.grid-cell-container {
-  touch-action: none; /* Disable browser touch actions for better control */
-  cursor: pointer;
-}
-
-/* Prevent scrolling when touching shapes */
-.shape-preview {
-  touch-action: none;
-}
-
-/* Optimize mobile animations for performance */
-@media (max-width: 768px) {
-  /* Use hardware acceleration for smooth animations */
-  .grid-cell.preview,
-  .shape.selected,
-  .shape.dragging,
-  body.touching .shape-preview .shape {
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  
-  /* Make preview more visible with exaggerated styles */
-  .grid-cell.preview {
-    background-color: rgba(var(--accent-color-rgb), 0.6) !important;
-    border: 2px solid var(--accent-color) !important;
-    box-shadow: 0 0 15px rgba(var(--accent-color-rgb), 0.8) !important;
-    animation: none !important; /* Disable animations during drag for better performance */
-    opacity: 0.95 !important;
-  }
-  
-  /* Don't use animations during drag for better performance */
-  body.touching .grid-cell.preview {
-    animation: none !important;
-    transform: scale(1) !important;
-  }
-}
-
-/* Add border-box sizing to grid board and container */
-.grid-board,
-.grid-board-container {
-  box-sizing: border-box;
-}
-
-@media (max-width: 768px) {
-  /* Ensure grid board uses full container width without fixed cell sizing to prevent overflow */
-  .grid-board {
-    width: 100% !important;
-    grid-template-columns: repeat(10, 1fr) !important;
-    grid-template-rows: repeat(10, 1fr) !important;
-    padding: 4px !important;
-    gap: 1px !important;
-    margin: 0 !important;
-    max-width: none !important;
-  }
-}
-
-/* ...existing code... */
-@media (max-width: 768px) {
-  .grid-board {
-    grid-template-columns: repeat(10, 1fr) !important;
-    grid-template-rows: repeat(10, 1fr) !important;
-    width: 100% !important;
-    height: 100% !important;
-    max-width: none !important;
-    max-height: none !important;
-    gap: var(--grid-gap) !important;
-    padding: var(--grid-gap) !important;
-    margin: 0 auto !important;
-  }
-  .grid-cell {
-    width: auto !important;
-    height: auto !important;
-  }
-}
-
-/* Force grid to fill container with equal squares */
-@media (max-width: 768px) {
-  .grid-board-container {
-    width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 1 !important;
-    max-width: none !important;
-    max-height: none !important;
-  }
-  .grid-board {
-    display: grid !important;
-    width: 100% !important;
-    height: 100% !important;
-    grid-template-columns: repeat(10, 1fr) !important;
-    grid-auto-rows: 1fr !important;
-    gap: var(--grid-gap) !important;
-    padding: var(--grid-gap) !important;
-  }
-  .grid-cell {
-    aspect-ratio: 1 !important;
-    width: auto !important;
-    height: auto !important;
-  }
-}
-
-/* Final override: ensure grid-cells fit on mobile without overflow */
-@media (max-width: 768px) {
-  .grid-board-container {
-    width: 95vw !important;
-    max-width: 95vh !important;
-    height: auto !important;
-    aspect-ratio: 1 !important;
-    margin: 0 auto !important;
-    padding: 0 !important;
-  }
-  .grid-board {
-    grid-template-columns: repeat(10, 1fr) !important;
-    grid-template-rows: repeat(10, 1fr) !important;
-    width: 100% !important;
-    height: 100% !important;
-    padding: 2px !important;
-    gap: 2px !important;
-  }
-  .grid-cell {
-    width: auto !important;
-    height: auto !important;
-    aspect-ratio: 1 !important;
-    margin: 0 !important;
-  }
-}
-
-/* Allow overall app container to grow for the grid */
-@media (max-width: 768px) {
-  .App {
-    height: auto !important;
-    min-height: auto !important;
-    overflow: visible !important;
-  }
-  .game-container {
-    height: auto !important;
-  }
-}
-
-@media (max-width: 768px) {
-  /* Calculate cell size so 10 cells plus gaps exactly fill viewport width */
-  :root {
-    --cell-size-mobile: calc((100vw - (var(--grid-gap) * 9)) / 10);
-  }
-  .grid-board {
-    grid-template-columns: repeat(10, var(--cell-size-mobile)) !important;
-    grid-template-rows: repeat(10, var(--cell-size-mobile)) !important;
-    padding: 0 !important;
-    gap: var(--grid-gap) !important;
-    margin: 0 auto !important;
-  }
-}
-
-/* Mobile grid visibility and container fit */
-@media (max-width: 768px) {
-  .game-container {
-    overflow-x: hidden;
-  }
-  .grid-board-container {
-    max-width: 100%;
-    padding: var(--grid-gap) !important;
-    overflow: hidden;
-  }
-  .grid-board {
-    grid-template-columns: repeat(10, 1fr) !important;
-    grid-template-rows: repeat(10, 1fr) !important;
-    width: 100% !important;
-    height: auto !important;
-  }
-  .grid-cell:not(.filled):not(.preview) {
-    /* restore stronger contrast like desktop for empty cells */
-    background-color: rgba(255, 255, 255, 0.06) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    box-shadow: none !important;
-    transition: background-color 0.3s ease;
-  }
-}
-
-/* Mobile: uniform small squares fitting container */
-@media (max-width: 768px) {
-  :root {
-    /* compute a mobile cell size to fit 10 cells + 9 gaps into full width */
-    --cell-size-mobile: calc((100vw - (var(--grid-gap) * 9)) / 10);
-  }
-  .grid-board-container {
-    width: 100% !important;
-    overflow: hidden !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-  }
-  .grid-board {
-    display: grid !important;
-    grid-template-columns: repeat(10, var(--cell-size-mobile)) !important;
-    grid-template-rows: repeat(10, var(--cell-size-mobile)) !important;
-    gap: var(--grid-gap) !important;
-    padding: var(--grid-gap) !important;
-    width: 100% !important;
-    height: auto !important;
-    margin: 0 auto !important;
-  }
-  .grid-cell {
-    width: var(--cell-size-mobile) !important;
-    height: var(--cell-size-mobile) !important;
-    border-radius: 4px !important;
-    box-shadow: none !important;
-  }
-}
-
-/* Consolidated mobile grid override */
-@media (max-width: 768px) {
-  .game-container { overflow-x: hidden; }
-  .grid-board-container {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow: hidden !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-  }
-  :root {
-    --cell-size-mobile: calc((100vw - (var(--grid-gap) * 9)) / 10);
-  }
-  .grid-board {
-    display: grid !important;
-    grid-template-columns: repeat(10, var(--cell-size-mobile)) !important;
-    grid-template-rows: repeat(10, var(--cell-size-mobile)) !important;
-    gap: var(--grid-gap) !important;
-    padding: var(--grid-gap) !important;
-    width: 100% !important;
-    height: 100% !important;
-    margin: 0 auto !important;
-  }
-  .grid-cell:not(.filled) {
-    width: var(--cell-size-mobile) !important;
-    height: var(--cell-size-mobile) !important;
-    background-color: rgba(255, 255, 255, 0.03) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-  }
-}
-
-/* Mobile: sharpen squares and ensure container fits */
-@media (max-width: 768px) {
-  /* slightly smaller cells for extra padding */
-  :root { --cell-size-mobile: calc((100vw - (var(--grid-gap) * 9)) / 10 - 2px); }
-
-  /* remove rounding on cells for perfect squares */
-  .grid-cell { border-radius: 0 !important; }
-
-  /* lock container within game area */
-  .App, .game-container, .grid-board-container { overflow-x: hidden !important; }
-  .grid-board-container {
-    width: 100% !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-    margin: 0 auto !important;
-  }
-
-  /* maintain board padding and gaps */
-  .grid-board { padding: var(--grid-gap) !important; gap: var(--grid-gap) !important; }
-}
-
-/* Final consolidated mobile grid override */
-@media (max-width: 768px) {
-  /* Fit container to viewport */
-  .grid-board-container {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    padding: 0 !important;
-    margin: 0 auto !important;
-    overflow: hidden !important;
-    box-sizing: border-box;
-  }
-  /* Compute precise cell size */
-  :root {
-    --cell-size-mobile: calc((100vw - (var(--grid-gap) * 9)) / 10);
-  }
-  /* Force grid into uniform squares without overflow */
-  .grid-board {
-    display: grid !important;
-    grid-template-columns: repeat(10, var(--cell-size-mobile)) !important;
-    grid-template-rows:    repeat(10, var(--cell-size-mobile)) !important;
-    gap: var(--grid-gap) !important;
-    padding: var(--grid-gap) !important;
-    width: calc(var(--cell-size-mobile) * 10 + var(--grid-gap) * 9) !important;
-    height: auto !important;
-    margin: 0 auto !important;
-  }
-  /* Ensure each cell stays square */
-  .grid-cell {
-    width: var(--cell-size-mobile) !important;
-    height: var(--cell-size-mobile) !important;
-    aspect-ratio: 1 !important;
-    border-radius: 4px !important;
-  }
-}
-
-@media (max-width: 768px) {
-  /* Remove dot overlay on mobile */
-  .grid-board::before {
-    display: none !important;
-  }
-  /* Reinstate square cells with gentle border-radius */
-  .grid-cell {
-    border-radius: 8px !important;
-  }
-  /* Lock board container within game area */
-  .grid-board-container {
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-  }
-}
-
-@media (max-width: 768px) {
-  /* Ensure filled cells display correctly on mobile */
-  .grid-cell.filled {
-    transform: scale(0.95);
-    box-shadow: 
-      0 0 20px var(--accent-color),
-      inset 0 0 5px rgba(255, 255, 255, 0.5);
-    border-color: transparent;
-    z-index: 2;
-  }
-}
-
-@media (max-width: 768px) {
-  /* Fix filled cells to respect original shape colors on mobile */
-  .grid-cell.filled {
-    transform: scale(0.95);
-  box-shadow: 
-    0 0 20px var(--accent-color),
-    inset 0 0 5px rgba(255, 255, 255, 0.5);
-  border-color: transparent;
-  z-index: 2;
-  }
-}
-
-@media (max-width: 768px) {
-  /* Fix filled cells on the grid to respect the original shape colors on mobile */
-  .grid-cell.filled {
-    transform: scale(0.95);
-  box-shadow: 
-    0 0 20px var(--accent-color),
-    inset 0 0 5px rgba(255, 255, 255, 0.5);
-  border-color: transparent;
-  z-index: 2;
-  }
-  
-  /* Important: prevent any other styles from overriding the background-color */
- 
-}
-
-/* Layout optimization overrides */
-.App {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  /* disable grid rows for static footer flow */
-  grid-template-rows: none;
-}
-
-.game-container {
-  flex: 1;
-  overflow: auto;
-}
-
-.footer {
-  position: static;
-  width: 100%;
-  margin-top: auto;
-}
-
-@media (max-width: 768px) {
-  .footer {
-    position: static;
-  }
-}
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/* SIMPLIFIED MOBILE GRID OVERRIDE                                        */
-/* make the 10×10 grid fill the screen and each cell auto‑square.         */
-@media (max-width: 768px) {
-  .grid-board-container {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 auto !important;
-    padding: 0 !important;
-  }
-  .grid-board {
-    display: grid !important;
-    grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
-    grid-template-rows:    repeat(10, minmax(0, 1fr)) !important;
-    gap:    var(--grid-gap) !important;
-    padding: var(--grid-gap) !important;
-    width:  100% !important;
-    height: auto !important;
-  }
-  .grid-cell {
-    width:        100% !important;
-    height:       100% !important;
-    aspect-ratio: 1        !important;
-  }
-}
-/* ────────────────────────────────────────────────────────────────────────── */
-
-/* ——— Remove duplicated keyframes ——— */
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes pulse {
-  0% { opacity: 0.7; transform: scale(0.98); }
-  100% { opacity: 1; transform: scale(1.02); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* ——— Consolidated mobile layout & grid override ——— */
+/* Responsive adjustments */
 @media (max-width: 768px) {
   :root {
     --cell-size: var(--cell-size-mobile);
@@ -2839,4 +928,296 @@ body.touching .shape-preview .shape {
 
   /* Hide duplicated or conflicting overrides */
   /* Removed multiple .pulse, .fadeIn, .settings-menu, .gear-icon re-definitions */
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* SIMPLIFIED MOBILE GRID OVERRIDE                                        */
+/* make the 10×10 grid fill the screen and each cell auto‑square.         */
+@media (max-width: 768px) {
+  .grid-board-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+  }
+  .grid-board {
+    display: grid !important;
+    grid-template-columns: repeat(10, minmax(0, 1fr)) !important;
+    grid-template-rows:    repeat(10, minmax(0, 1fr)) !important;
+    gap:    var(--grid-gap) !important;
+    padding: var(--grid-gap) !important;
+    width:  100% !important;
+    height: auto !important;
+  }
+  .grid-cell {
+    width:        100% !important;
+    height:       100% !important;
+    aspect-ratio: 1        !important;
+  }
+}
+/* ────────────────────────────────────────────────────────────────────────── */
+
+/* ——— Remove duplicated keyframes ——— */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.7; transform: scale(0.98); }
+  100% { opacity: 1; transform: scale(1.02); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Mobile specific refinements */
+@media (max-width: 768px) {
+  /* Hide header scoreboard to avoid duplication */
+  .app-header .header-score {
+    display: none !important;
+  }
+  /* Adjust header layout to center title and loader */
+  .app-header {
+    grid-template-columns: 1fr auto;
+    padding: 0.5rem 1rem;
+  }
+  /* Style mobile bottom score display */
+  .mobile-score-display {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin: 1rem 0;
+  }
+  .app-header {
+    grid-template-columns: auto auto !important;
+    justify-items: center;
+    padding: 0.5rem 1rem;
+    height: auto;
+  }
+  .app-header h1 {
+    font-size: 1.5rem !important;
+    margin: 0;
+  }
+  .app-header .loader-logo {
+    margin: 0;
+  }
+
+  .mobile-score-display .score-board {
+    justify-content: space-between !important;
+  }
+}
+
+/* Further refinements for very small devices */
+@media (max-width: 414px) {
+  /* Header adjustments */
+  .app-header {
+    grid-template-columns: 1fr auto !important;
+    gap: 0.5rem;
+  }
+  .app-header h1 {
+    font-size: 1.5rem !important;
+  }
+  .loader-logo {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  /* Shapes panel horizontal layout */
+  .shape-previews {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center;
+    gap: 0.5rem !important;
+  }
+  .shape-preview {
+    flex: 1 !important;
+    padding: 0.5rem !important;
+    margin: 0 !important;
+    background: rgba(255,255,255,0.03) !important;
+  }
+
+  /* Mobile bottom score adjustments */
+  .mobile-score-display {
+    font-size: 0.9rem !important;
+    padding: 0.5rem 0.75rem !important;
+  }
+  .mobile-score-display .score-value {
+    font-size: 1.1rem !important;
+  }
+}
+
+/* Mobile scoreboard layout enhancements */
+@media (max-width: 768px) {
+  .mobile-score-display .score-board {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+  }
+  .mobile-score-display .score-item {
+    flex: 1 1 auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .mobile-score-display .score-item:not(:last-child)::after {
+    display: none !important;
+  }
+}
+
+/* Gear icon in header */
+.gear-icon {
+  font-size: 1.5rem;
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  padding: 0.4rem;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.gear-icon:hover {
+  background: rgba(255,255,255,0.3);
+  transform: rotate(20deg);
+}
+
+/* Settings menu backdrop */
+.settings-backdrop {
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(2px);
+}
+
+/* Settings menu container */
+.settings-menu {
+  background: var(--primary-bg);
+  color: var(--primary-color);
+  width: clamp(280px, 80vw, 350px);
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  top: 70px;
+  right: 16px;
+  transform: none;
+}
+
+/* Tabs styling */
+.settings-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.settings-tab {
+  flex: 1;
+  background: var(--secondary-color);
+  border: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.settings-tab.active {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+/* Panel visibility */
+.settings-panel { display: none; }
+.settings-panel.active { display: block; }
+
+/* Panel group spacing */
+.panel-group { margin-bottom: 1rem; }
+.menu-btn { width: 100%; }
+.option-btn, .base-difficulty-btn, .mode-option, .theme-option {
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+.theme-selector { display: grid; grid-template-columns: repeat(2,1fr); gap: 0.5rem; }
+.theme-preview { width: 100%; height: 2rem; border-radius: 4px; }
+.default-theme { background: linear-gradient(135deg, #6259ff, #4d61fc); }
+.modern-theme { background: linear-gradient(135deg, #ff7e5f, #6c63ff); }
+
+/* Close button positioning */
+.menu-btn.close-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: none; font-size: 1.2rem; }
+
+/* Sleek Minimalistic Overrides */
+:root {
+  /* New unified card background and shadows */
+  --card-bg: rgba(255,255,255,0.15);
+  --card-radius: 12px;
+  --card-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+/* Apply unified style to containers */
+.App,
+.app-header,
+.settings-menu,
+.mobile-score-display,
+.game-over-modal,
+.tutorial-modal {
+  background: var(--card-bg) !important;
+  border-radius: var(--card-radius) !important;
+  box-shadow: var(--card-shadow) !important;
+}
+
+/* Simplify grid board appearance */
+.grid-board {
+  background: transparent !important;
+  padding: 8px !important;
+  box-shadow: none !important;
+  border-radius: var(--card-radius) !important;
+}
+
+/* Subtle cell borders */
+.grid-cell {
+  /* border-preserve only, allow inline backgroundColor */
+  border: 1px solid rgba(255,255,255,0.2) !important;
+  box-shadow: none !important;
+}
+.grid-cell.filled {
+  /* allow cell color via inline style */
+  border-color: transparent !important;
+}
+
+/* Simplify next-shapes previews */
+.shape-preview {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255,255,255,0.2) !important;
+  border-radius: var(--card-radius) !important;
+}
+
+/* Minimalistic scoreboard */
+.score-board {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Gear icon: transparent */
+.gear-icon {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Accent hover states */
+.settings-tab.active,
+.menu-btn.active,
+.restart-btn:hover,
+.share-btn:hover {
+  background: var(--accent-hover) !important;
+  color: #fff !important;
 }

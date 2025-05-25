@@ -8,6 +8,9 @@ export const SHAPES = {
     { pattern: [[true, true], [true, false]], color: '#FBBC05', name: 'L-small' },
     { pattern: [[true, true], [false, true]], color: '#34A853', name: 'reverse-L-small' },
     { pattern: [[true], [true], [true]], color: '#8E44AD', name: 'line-3-vertical' },
+    // New easy shapes: single and 2x2 L variants
+    { pattern: [[true]], color: '#FFEB3B', name: 'single' },
+    { pattern: [[true, true, true], [true, false, false]], color: '#00BCD4', name: 'small-L3' },
   ],
   normal: [
     { pattern: [[true, true, true], [false, true, false]], color: '#4285F4', name: 'T' },
@@ -17,6 +20,9 @@ export const SHAPES = {
     { pattern: [[true, true], [true, false], [true, false]], color: '#8E44AD', name: 'L' },
     { pattern: [[true, true], [false, true], [false, true]], color: '#E67E22', name: 'reverse-L' },
     { pattern: [[true], [true], [true], [true]], color: '#1ABC9C', name: 'line-4-vertical' },
+    // New normal shapes: plus and small staircase
+    { pattern: [[false, true, false], [true, true, true], [false, true, false]], color: '#9C27B0', name: 'plus' },
+    { pattern: [[true, true, false], [false, true, true]], color: '#FF5722', name: 'stair-2' },
   ],
   hard: [
     { pattern: [[true, true, true], [true, false, false], [true, false, false]], color: '#4285F4', name: 'L-large' },
@@ -28,6 +34,9 @@ export const SHAPES = {
     { pattern: [[true, true, false], [false, true, true], [false, false, true]], color: '#1ABC9C', name: 'complex-3' },
     { pattern: [[false, true, true], [true, true, false], [true, false, false]], color: '#3498DB', name: 'complex-4' },
     { pattern: [[true, true], [true, true], [true, false]], color: '#9B59B6', name: 'tetris-block' },
+    // New hard shapes: 5-block line and U-shape
+    { pattern: [[true, true, true, true, true]], color: '#3F51B5', name: 'line-5' },
+    { pattern: [[true, false, true], [true, true, true]], color: '#009688', name: 'U-shape' },
   ]
   // Extreme difficulty level with all shapes
   // No need to duplicate the shapes as we'll access them dynamically
