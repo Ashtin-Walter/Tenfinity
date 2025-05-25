@@ -877,7 +877,7 @@ body {
 
 
 /* Responsive adjustments */
-=======
+
 /* Consolidated mobile grid override to ensure 10x10 cells fit viewport */
 @media (max-width: 768px) {
   :root {
@@ -1253,7 +1253,6 @@ body {
 .share-btn:hover {
   background: var(--accent-hover) !important;
   color: #fff !important;
-=======
   /* Hide duplicated or conflicting overrides */
   /* Removed multiple .pulse, .fadeIn, .settings-menu, .gear-icon re-definitions */
 }
