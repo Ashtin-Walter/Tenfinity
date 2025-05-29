@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GridBoard from './components/GridBoard';
 import NextShapes from './components/NextShapes';
 import GameOver from './components/GameOver';
@@ -123,17 +123,17 @@ const checkForCompletedLines = (grid, colorGrid, setScore, setGrid, setColorGrid
               }
             }
           }
-        });
-
-        setGrid(newGrid);
+        });        setGrid(newGrid);
         setColorGrid(newColorGrid);
         setScore(prevScore => prevScore + linesCleared * 10);
         setIsLineCleared(true); // Activate loader-logo animation
 
-        // Reset loader-logo animation after it plays
+        // Reset loader-logo animation after it plays AND ensure game over check can run
+        // Use a longer delay to ensure React state updates have completed
         setTimeout(() => {
+          console.log('Line clearing completely finished - allowing game over check');
           setIsLineCleared(false);
-        }, 1500); // Duration of loader-logo animation
+        }, 1600); // Slightly longer to ensure all state updates have processed
 
       }, 500); // Duration of cell-disappear animation (must match CSS)
 
@@ -188,8 +188,8 @@ const App = () => {
   const [gameOver, setGameOver] = useState(false); // new state for game over
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isLandscape, setIsLandscape] = useState(window.innerHeight < window.innerWidth);
-  const [isTutorialOpen, setIsTutorialOpen] = useState(() => !localStorage.getItem('tutorialSeen'));
-  const [isLineCleared, setIsLineCleared] = useState(false); // new state to track line clearing
+  const [isTutorialOpen, setIsTutorialOpen] = useState(() => !localStorage.getItem('tutorialSeen'));  const [isLineCleared, setIsLineCleared] = useState(false); // new state to track line clearing
+  const [isRefreshingShapes, setIsRefreshingShapes] = useState(false); // new state to track shape refreshing
   const [prevGameState, setPrevGameState] = useState(null); // for undo
 
   // Refs for touch handling and other direct DOM manipulations
@@ -312,14 +312,24 @@ const App = () => {
     
     if (!success) {
       navigator.vibrate?.(200); // Vibrate on failed placement
-      return;
-    }
+      return;    }
     
     // Success case
     const newShapes = shapes.filter((s, i) => i !== draggingShape.index); // Use filter for a new array
     if (newShapes.every(s => s === null) || newShapes.length === 0) { // Check if all remaining are null or array is empty
-      setShapes(getNextShapes());
+      console.log('Shape placement: All shapes used, refreshing...');
+      setIsRefreshingShapes(true);
+      // Use Promise.resolve to ensure this happens after current state updates
+      Promise.resolve().then(() => {
+        setTimeout(() => {
+          console.log('Shape placement: Refreshing shapes with new set');
+          setShapes(getNextShapes());
+          setIsRefreshingShapes(false);
+          console.log('Shape placement: Shape refreshing complete');
+        }, 10);
+      });
     } else {
+      console.log('Shape placement: Shapes remaining, filtering used shape');
       setShapes(newShapes);
     }
     
@@ -494,13 +504,23 @@ const App = () => {
     const success = placeShapeOnGrid(selectedShape.shape, colIndex, rowIndex);
     if (!success) {
       navigator.vibrate?.(200);
-      return;
-    }
+      return;    }
     
     const newShapes = shapes.filter((s, i) => i !== selectedShape.index); // Use filter
     if (newShapes.every(s => s === null) || newShapes.length === 0) {
-      setShapes(getNextShapes());
+      console.log('Cell click: All shapes used, refreshing...');
+      setIsRefreshingShapes(true);
+      // Use Promise.resolve to ensure this happens after current state updates
+      Promise.resolve().then(() => {
+        setTimeout(() => {
+          console.log('Cell click: Refreshing shapes with new set');
+          setShapes(getNextShapes());
+          setIsRefreshingShapes(false);
+          console.log('Cell click: Shape refreshing complete');
+        }, 10);
+      });
     } else {
+      console.log('Cell click: Shapes remaining, filtering used shape');
       setShapes(newShapes);
     }
     
@@ -649,7 +669,6 @@ const App = () => {
     // For simplicity, current behavior is kept, but could be refined.
     // setPreviewPos(null); 
   }, []); // Removed previewPos from deps as it's not used to set state here
-
   // Drag start from shape preview (desktop)
   const handleDragStart = useCallback((e, index, shape) => {
     setDraggingShape({ index, shape });
@@ -658,69 +677,6 @@ const App = () => {
     // We need to stringify the shape including its color
     e.dataTransfer.setData('shape', JSON.stringify(shape));
   }, []);
-
-  // Memoize canPlaceAnyShape
-  const canPlaceAnyShape = useMemo(() => {
-    return shapes.some(shape => shape && canPlaceShape(grid, shape));
-  }, [grid, shapes]);
-
-  // Memoize checkGameOver
-  const checkGameOver = useCallback((currentGrid, availableShapes) => {
-    // If no shapes available, game is over
-    if (!availableShapes || availableShapes.length === 0) {
-      return true;
-    }
-
-    // Check if any shape can be placed anywhere on the grid
-    for (const shape of availableShapes) {
-      if (!shape) { // Add this check
-        continue; // Skip null shapes
-      }
-      const pattern = shape.pattern || shape;
-      
-      // Try all possible positions on the grid
-      for (let row = 0; row <= GRID_SIZE - pattern.length; row++) {
-        for (let col = 0; col <= GRID_SIZE - pattern[0].length; col++) {
-          // Check if shape can be placed at this position
-          let canPlace = true;
-          
-          for (let shapeRow = 0; shapeRow < pattern.length && canPlace; shapeRow++) {
-            for (let shapeCol = 0; shapeCol < pattern[shapeRow].length && canPlace; shapeCol++) {
-              if (pattern[shapeRow][shapeCol]) {
-                const gridRow = row + shapeRow;
-                const gridCol = col + shapeCol;
-                
-                // Check bounds and collision
-                if (gridRow >= GRID_SIZE || gridCol >= GRID_SIZE || currentGrid[gridRow][gridCol]) {
-                  canPlace = false;
-                }
-              }
-            }
-          }
-          
-          // If we found a valid placement, game is not over
-          if (canPlace) {
-            return false;
-          }
-        }
-      }
-    }
-    
-    // No valid moves found for any shape
-    return true;
-  }, []);
-
-  // Game over check effect
-  useEffect(() => {
-    if (shapes.length > 0) {
-      const isGameOver = checkGameOver(grid, shapes);
-      if (isGameOver && !gameOver) {
-        console.log('Game over detected - no valid moves available');
-        setGameOver(true);
-      }
-    }
-  }, [grid, shapes, gameOver, checkGameOver]);
-
   // High score update effect
   useEffect(() => {
     if (gameOver && score > highScore) {
@@ -801,14 +757,52 @@ const App = () => {
       // It is correctly reset by a setTimeout within the checkForCompletedLines function
       // after the animation duration.
     }
-  }, [isLineCleared]);
-
-  // Effect for canPlaceAnyShape to trigger game over
+  }, [isLineCleared]);  // Game over detection - only check when line clearing is complete
   useEffect(() => {
-    if (!canPlaceAnyShape) {
-      setGameOver(true);
+    // Only check for game over when:
+    // 1. Not currently clearing lines (animation complete)
+    // 2. Not currently refreshing shapes 
+    // 3. Game is not already over
+    // 4. We have shapes to check AND they are not empty/null
+    if (!isLineCleared && !isRefreshingShapes && !gameOver && shapes.length > 0 && shapes.some(s => s !== null)) {
+      // Add a small delay to ensure grid state and shapes have fully updated
+      const gameOverCheckTimeout = setTimeout(() => {
+        console.log('=== GAME OVER CHECK START ===');
+        console.log('Grid state when checking:', grid.map(row => row.map(cell => cell ? '■' : '□').join('')));
+        console.log('Available shapes:', shapes.length);
+        console.log('Shapes:', shapes.map((shape, i) => shape ? `${i}: ${shape.pattern?.length || 'no pattern'}` : `${i}: null`));
+        console.log('Non-null shapes:', shapes.filter(s => s !== null).length);
+        
+        // Check if any shape can be placed anywhere on the current grid
+        const hasValidMove = shapes.some(shape => {
+          if (!shape) return false; // Skip null shapes
+          const canPlace = canPlaceShape(grid, shape);
+          console.log(`Shape can be placed:`, canPlace, shape);
+          return canPlace;
+        });
+        
+        console.log('Has valid move:', hasValidMove);
+        
+        if (!hasValidMove) {
+          console.log('=== GAME OVER TRIGGERED ===');
+          setGameOver(true);
+        } else {
+          console.log('=== GAME CONTINUES ===');
+        }
+        console.log('=== GAME OVER CHECK END ===');
+      }, 100); // Smaller delay since we now have proper state coordination
+
+      return () => clearTimeout(gameOverCheckTimeout);
+    } else {
+      console.log('Game over check skipped:', { 
+        isLineCleared, 
+        isRefreshingShapes,
+        gameOver, 
+        shapesLength: shapes.length,
+        hasNonNullShapes: shapes.some(s => s !== null)
+      });
     }
-  }, [canPlaceAnyShape, gameOver]); // Added gameOver to prevent multiple calls if already over
+  }, [isLineCleared, isRefreshingShapes, gameOver, shapes, grid]); // Monitor these key states
 
   // In App.js, when opening/closing settings:
   useEffect(() => {

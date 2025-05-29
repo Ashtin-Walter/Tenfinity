@@ -1355,7 +1355,7 @@ body {
 .shortcuts-list li {
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
-=
+}
 /* Gear icon: transparent */
 .gear-icon {
   background: transparent !important;
@@ -1416,6 +1416,7 @@ body {
 .dark-mode .shortcuts-list kbd {
   background-color: rgba(255,255,255,0.15);
   border-color: rgba(255,255,255,0.2);
+}
 }
 
 
