@@ -862,22 +862,25 @@ const App = () => {
   }, [isTutorialOpen, isMobile, menuOpen, gameOver]);
 
   return (
-    <div className={`App ${darkMode ? 'dark-mode' : ''} ${isLandscape ? 'landscape' : 'portrait'} ${theme}`}>
-      <header className="app-header">
-        <h1>Tenfinity</h1>
-        <div className={`loader-logo ${isLineCleared ? 'animate-line-clear' : ''}`}></div>
-        {!isMobile && (
-          <div className="header-score">
-            <ScoreBoard score={score} highScore={highScore} />
-          </div>
-        )}
-        <button
-          className="gear-icon"
-          onClick={handleMenuOpen}
-          aria-label="Open settings menu"
-        >
-          ⚙️
-        </button>
+    <div className={`App ${darkMode ? 'dark-mode' : ''} ${isLandscape ? 'landscape' : 'portrait'} ${theme}`}>      <header className="app-header">
+        <div className="header-left">
+          <div className={`loader-logo ${isLineCleared ? 'animate-line-clear' : ''}`}></div>
+          <h1>Tenfinity</h1>
+        </div>
+        <div className="header-right">
+          {!isMobile && (
+            <div className="header-score">
+              <ScoreBoard score={score} highScore={highScore} />
+            </div>
+          )}
+          <button
+            className="gear-icon"
+            onClick={handleMenuOpen}
+            aria-label="Open settings menu"
+          >
+            ⚙️
+          </button>
+        </div>
       </header>
       
       {isTutorialOpen && (
@@ -933,13 +936,28 @@ const App = () => {
         onLoadGame={loadGame}
         onOpenTutorial={useCallback(() => setIsTutorialOpen(true), [])} // Memoize tutorial opener
       />
-      
-      <div className="game-container">
+        <div className="game-container">
         {isMobile && (
           <div className="mobile-score-display">
             <ScoreBoard score={score} highScore={highScore} />
           </div>
         )}
+        {/* Assign ref to the grid board container */}
+        <div className="grid-board-container" ref={gridRef}> 
+          <GridBoard 
+            grid={grid} 
+            onDrop={handleDrop} 
+            onDragOver={handleDragOver} 
+            onDragLeave={handleDragLeave}
+            previewShape={draggingShape && draggingShape.shape}
+            previewPos={previewPos}
+            isMobile={isMobile}
+            onCellClick={handleCellClick} 
+            onMouseMove={handleGridMouseMove}
+            selectedShape={!!selectedShape} 
+            cellColors={colorGrid}
+          />
+        </div>
         <div className="shapes-container">
           <NextShapes 
             shapes={shapes} 
@@ -957,22 +975,6 @@ const App = () => {
           >
             ↺ Undo
           </button>
-        </div>
-        {/* Assign ref to the grid board container */}
-        <div className="grid-board-container" ref={gridRef}> 
-          <GridBoard 
-            grid={grid} 
-            onDrop={handleDrop} 
-            onDragOver={handleDragOver} 
-            onDragLeave={handleDragLeave}
-            previewShape={draggingShape && draggingShape.shape}
-            previewPos={previewPos}
-            isMobile={isMobile}
-            onCellClick={handleCellClick} 
-            onMouseMove={handleGridMouseMove}
-            selectedShape={!!selectedShape} 
-            cellColors={colorGrid}
-          />
         </div>
         
         {isMobile && draggingShape && dragPosition && (
