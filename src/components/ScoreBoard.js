@@ -10,15 +10,15 @@ const ScoreBoard = ({ score, highScore }) => {
   return (
     <div className="score-board">
       <div className="score-item current-score">
-        <span className="score-label">Score:</span>
+        <span className="score-label">Score</span><br></br>
         <span className="score-value">{score}</span>
       </div>
       <div className="score-item high-score">
-        <span className="score-label">Best:</span>
+        <span className="score-label">Best</span><br></br>
         <span className="score-value">{highScore}</span>
       </div>
       <div className="score-item level">
-        <span className="score-label">Level:</span>
+        <span className="score-label">Level</span><br></br>
         <span className="score-value">{level}</span>
       </div>
     </div>
