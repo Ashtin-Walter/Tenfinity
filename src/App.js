@@ -465,7 +465,7 @@ const checkGameOver = useCallback(() => {
     if (draggingShape) {
       setDragPosition({ x: touch.clientX, y: touch.clientY });
     }
-  }, [draggingShape, gridRef, previewPos, canPlaceShapeAt]); // Added dependencies
+  }, [draggingShape, gridRef, previewPos, grid]); // Removed canPlaceShapeAt from dependencies
 
   // Touch end handler
   const handleTouchEnd = useCallback((e) => {
@@ -579,7 +579,7 @@ const checkGameOver = useCallback(() => {
       if (previewPos !== null) {
         setPreviewPos(null); // Clear preview if outside grid
       }    }
-  }, [selectedShape, gridRef, previewPos, canPlaceShapeAt]);
+  }, [selectedShape, gridRef, previewPos, grid]);
 
   // Deselect shape on outside click
   useEffect(() => {
