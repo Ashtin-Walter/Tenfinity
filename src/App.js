@@ -144,29 +144,55 @@ const checkForCompletedLines = (grid, colorGrid, setScore, setGrid, setColorGrid
 // Enhanced placement check: test all four rotations of each shape
 const canPlaceShape = (grid, shape) => {
   if (!shape) return false;
+  const pattern = shape.pattern || shape;
+  if (!Array.isArray(pattern) || !pattern.length || !pattern[0].length) return false;
+
   for (let rot = 0; rot < 4; rot++) {
-    const candidate = rotateShape(shape, rot);
-    const pattern = candidate.pattern || candidate;
-    const patH = pattern.length;
-    const patW = pattern[0].length;
+    const rotated = rotateShape(shape, rot);
+    const pat = rotated.pattern || rotated;
+    const patH = pat.length;
+    const patW = pat[0].length;
+
     for (let row = 0; row <= GRID_SIZE - patH; row++) {
       for (let col = 0; col <= GRID_SIZE - patW; col++) {
-        let ok = true;
-        for (let y = 0; y < patH; y++) {
-          for (let x = 0; x < patW; x++) {
-            if (pattern[y][x] && grid[row + y][col + x]) {
-              ok = false;
-              break;
-            }
-          }
-          if (!ok) break;
-        }
-        if (ok) return true;
+        if (canPlaceAt(grid, pat, row, col)) return true;
       }
     }
   }
   return false;
 };
+
+function canPlaceAt(grid, pattern, startRow, startCol) {
+  for (let y = 0; y < pattern.length; y++) {
+    for (let x = 0; x < pattern[0].length; x++) {
+      if (pattern[y][x] && grid[startRow + y][startCol + x]) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+// Helper function to check if shape can be placed at specific position
+function canPlaceShapeAt(grid, shape, startRow, startCol) {
+  if (!shape) return false;
+  const pattern = shape.pattern || shape;
+  const patH = pattern.length;
+  const patW = pattern[0].length;
+  // Check bounds
+  if (startRow + patH > GRID_SIZE || startCol + patW > GRID_SIZE) {
+    return false;
+  }
+  // Check for collisions
+  for (let y = 0; y < patH; y++) {
+    for (let x = 0; x < patW; x++) {
+      if (pattern[y][x] && grid[startRow + y][startCol + x]) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
 const App = () => {
   const [grid, setGrid] = useState(generateEmptyGrid);
@@ -301,6 +327,23 @@ const App = () => {
     return true;
   }, [grid, colorGrid, shapes, score, setPrevGameState, setGrid, setColorGrid, setScore, setIsLineCleared, gridRef]); // Added gridRef to dependencies
 
+  // --- GAME OVER CHECK ---
+const checkGameOver = useCallback(() => {
+  if (gameOver) return false;
+  // If no shapes left or all are null/empty, game is over
+  if (!shapes || shapes.length === 0 || shapes.every(s => !s)) {
+    setGameOver(true);
+    return true;
+  }
+  // If none of the shapes can be placed, game is over
+  const anyCanPlace = shapes.some(s => s && canPlaceShape(grid, s));
+  if (!anyCanPlace) {
+    setGameOver(true);
+    return true;
+  }
+  return false;
+}, [gameOver, shapes, grid]);
+
   const handleDrop = useCallback((e) => {
     if (e && typeof e.preventDefault === "function") {
       e.preventDefault();
@@ -309,7 +352,6 @@ const App = () => {
     
     const { row: rowIndex, col: cellIndex } = previewPos;
     const success = placeShapeOnGrid(draggingShape.shape, cellIndex, rowIndex);
-    
     if (!success) {
       navigator.vibrate?.(200); // Vibrate on failed placement
       return;    }
@@ -331,6 +373,10 @@ const App = () => {
     } else {
       console.log('Shape placement: Shapes remaining, filtering used shape');
       setShapes(newShapes);
+      // --- GAME OVER CHECK after shape placement if shapes are empty or none can be placed ---
+      setTimeout(() => {
+        checkGameOver();
+      }, 20);
     }
     
     // Visual feedback for successful placement
@@ -344,32 +390,45 @@ const App = () => {
     }
       setDraggingShape(null);
     setPreviewPos(null);
-  }, [previewPos, draggingShape, shapes, placeShapeOnGrid, getNextShapes, gridRef]); // Added gridRef
+  }, [previewPos, draggingShape, shapes, placeShapeOnGrid, getNextShapes, gridRef, checkGameOver]); // Added checkGameOver
 
-  // Helper function to check if shape can be placed at specific position
-  const canPlaceShapeAt = useCallback((shape, startRow, startCol) => {
-    if (!shape) return false;
+  // Click on a grid cell when a shape is selected
+  const handleCellClick = useCallback((rowIndex, colIndex) => {
+    if (!selectedShape) return;
     
-    const pattern = shape.pattern || shape;
-    const patH = pattern.length;
-    const patW = pattern[0].length;
-    
-    // Check bounds
-    if (startRow + patH > GRID_SIZE || startCol + patW > GRID_SIZE) {
-      return false;
+    const success = placeShapeOnGrid(selectedShape.shape, colIndex, rowIndex);
+    if (!success) {
+      navigator.vibrate?.(200);
+      return;
     }
     
-    // Check for collisions
-    for (let y = 0; y < patH; y++) {
-      for (let x = 0; x < patW; x++) {
-        if (pattern[y][x] && grid[startRow + y][startCol + x]) {
-          return false;
-        }
-      }
+    const newShapes = shapes.filter((s, i) => i !== selectedShape.index); // Use filter
+    if (newShapes.every(s => s === null) || newShapes.length === 0) {
+      setIsRefreshingShapes(true);
+      Promise.resolve().then(() => {
+        setTimeout(() => {
+          setShapes(getNextShapes());
+          setIsRefreshingShapes(false);
+        }, 10);
+      });
+    } else {
+      setShapes(newShapes);
+      // --- GAME OVER CHECK after shape placement if shapes are empty or none can be placed ---
+      setTimeout(() => {
+        checkGameOver();
+      }, 20);
     }
     
-    return true;
-  }, [grid]);
+    const gridElement = gridRef.current; // Use ref
+    if (gridElement) {
+      gridElement.classList.add('shape-placed');
+      setTimeout(() => {
+        gridElement.classList.remove('shape-placed');
+      }, 300);
+    }    setSelectedShape(null);
+    setDraggingShape(null);
+    setPreviewPos(null);
+  }, [selectedShape, placeShapeOnGrid, shapes, getNextShapes, gridRef, checkGameOver]); // Added gridRef
 
   // Touch move handler - optimized for better performance and visual feedback
   const handleTouchMove = useCallback((e) => {
@@ -396,7 +455,7 @@ const App = () => {
     if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
       // Only update preview if position changed and add placement validation
       if (!previewPos || previewPos.row !== row || previewPos.col !== col) {
-        const canPlace = draggingShape ? canPlaceShapeAt(draggingShape.shape, row, col) : true;
+        const canPlace = draggingShape ? canPlaceShapeAt(grid, draggingShape.shape, row, col) : true;
         setPreviewPos({ row, col, canPlace });
       }
     } else {
@@ -497,44 +556,6 @@ const App = () => {
     }
   }, [selectedShape]);
 
-  // Click on a grid cell when a shape is selected
-  const handleCellClick = useCallback((rowIndex, colIndex) => {
-    if (!selectedShape) return;
-    
-    const success = placeShapeOnGrid(selectedShape.shape, colIndex, rowIndex);
-    if (!success) {
-      navigator.vibrate?.(200);
-      return;    }
-    
-    const newShapes = shapes.filter((s, i) => i !== selectedShape.index); // Use filter
-    if (newShapes.every(s => s === null) || newShapes.length === 0) {
-      console.log('Cell click: All shapes used, refreshing...');
-      setIsRefreshingShapes(true);
-      // Use Promise.resolve to ensure this happens after current state updates
-      Promise.resolve().then(() => {
-        setTimeout(() => {
-          console.log('Cell click: Refreshing shapes with new set');
-          setShapes(getNextShapes());
-          setIsRefreshingShapes(false);
-          console.log('Cell click: Shape refreshing complete');
-        }, 10);
-      });
-    } else {
-      console.log('Cell click: Shapes remaining, filtering used shape');
-      setShapes(newShapes);
-    }
-    
-    const gridElement = gridRef.current; // Use ref
-    if (gridElement) {
-      gridElement.classList.add('shape-placed');
-      setTimeout(() => {
-        gridElement.classList.remove('shape-placed');
-      }, 300);
-    }    setSelectedShape(null);
-    setDraggingShape(null);
-    setPreviewPos(null);
-  }, [selectedShape, placeShapeOnGrid, shapes, getNextShapes, gridRef]); // Added gridRef
-
   // Mouse move over grid for preview (desktop) - optimized with throttling
   const handleGridMouseMove = useCallback((e) => {
     if (!selectedShape || !gridRef.current) return;
@@ -551,7 +572,7 @@ const App = () => {
       // Only update if position actually changed to reduce re-renders
       if (!previewPos || previewPos.row !== row || previewPos.col !== col) {
         // Check if shape can be placed at this position before showing preview
-        const canPlace = canPlaceShapeAt(selectedShape.shape, row, col);
+        const canPlace = canPlaceShapeAt(grid, selectedShape.shape, row, col);
         setPreviewPos({ row, col, canPlace });
       }
     } else {
@@ -765,44 +786,35 @@ const App = () => {
     // 3. Game is not already over
     // 4. We have shapes to check AND they are not empty/null
     if (!isLineCleared && !isRefreshingShapes && !gameOver && shapes.length > 0 && shapes.some(s => s !== null)) {
-      // Add a small delay to ensure grid state and shapes have fully updated
-      const gameOverCheckTimeout = setTimeout(() => {
-        console.log('=== GAME OVER CHECK START ===');
-        console.log('Grid state when checking:', grid.map(row => row.map(cell => cell ? '■' : '□').join('')));
-        console.log('Available shapes:', shapes.length);
-        console.log('Shapes:', shapes.map((shape, i) => shape ? `${i}: ${shape.pattern?.length || 'no pattern'}` : `${i}: null`));
-        console.log('Non-null shapes:', shapes.filter(s => s !== null).length);
-        
-        // Check if any shape can be placed anywhere on the current grid
-        const hasValidMove = shapes.some(shape => {
-          if (!shape) return false; // Skip null shapes
-          const canPlace = canPlaceShape(grid, shape);
-          console.log(`Shape can be placed:`, canPlace, shape);
-          return canPlace;
-        });
-        
-        console.log('Has valid move:', hasValidMove);
-        
-        if (!hasValidMove) {
-          console.log('=== GAME OVER TRIGGERED ===');
-          setGameOver(true);
-        } else {
-          console.log('=== GAME CONTINUES ===');
-        }
-        console.log('=== GAME OVER CHECK END ===');
-      }, 100); // Smaller delay since we now have proper state coordination
-
-      return () => clearTimeout(gameOverCheckTimeout);
-    } else {
-      console.log('Game over check skipped:', { 
-        isLineCleared, 
-        isRefreshingShapes,
-        gameOver, 
-        shapesLength: shapes.length,
-        hasNonNullShapes: shapes.some(s => s !== null)
-      });
+      // Check if any shape can be placed on the current grid
+      const anyMovePossible = shapes.some(shape => shape && canPlaceShape(grid, shape));
+      if (!anyMovePossible) {
+        setGameOver(true);
+      }
     }
-  }, [isLineCleared, isRefreshingShapes, gameOver, shapes, grid]); // Monitor these key states
+    // If all shapes are null or empty, don't trigger game over here (let shape refresh logic handle it)
+  }, [isLineCleared, isRefreshingShapes, gameOver, shapes, grid]);
+
+  // --- After shapes are refreshed, check for game over ---
+useEffect(() => {
+  if (!isRefreshingShapes && !isLineCleared && !gameOver) {
+    checkGameOver();
+  }
+}, [isRefreshingShapes, isLineCleared, gameOver, shapes, grid, checkGameOver]);
+
+// --- After line clear animation completes, check for game over ---
+useEffect(() => {
+  if (!isLineCleared && !isRefreshingShapes && !gameOver) {
+    checkGameOver();
+  }
+}, [isLineCleared, isRefreshingShapes, gameOver, shapes, grid, checkGameOver]);
+
+// --- After undo, check for game over ---
+useEffect(() => {
+  if (!gameOver) {
+    checkGameOver();
+  }
+}, [prevGameState, gameOver, checkGameOver]);
 
   // In App.js, when opening/closing settings:
   useEffect(() => {
