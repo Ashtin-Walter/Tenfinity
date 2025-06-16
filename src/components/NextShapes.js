@@ -4,27 +4,30 @@ import PropTypes from 'prop-types';
 
 const NextShapes = ({ shapes, onDragStart, onTouchStart, isMobile, onShapeClick, selectedShapeIndex }) => {
   const renderedShapes = useMemo(() => (
-    shapes.map((shape, index) => 
-      shape ? (
-        <div key={index} className="shape-preview">
+    shapes.map((shape, index) => (
+      <div 
+        key={index} 
+        className={`shape-preview ${!shape ? 'empty' : ''} ${selectedShapeIndex === index ? 'selected' : ''}`}
+        role={shape ? 'button' : 'presentation'}
+        aria-label={shape ? `Shape option ${index + 1}` : 'Empty shape slot'}
+      >
+        {shape && (
           <Shape 
             shape={shape} 
             onDragStart={(e) => onDragStart(e, index, shape)}
             onTouchStart={(e) => onTouchStart(e, index, shape)}
-            onShapeClick={() => onShapeClick && onShapeClick(index, shape)}
+            onShapeClick={() => onShapeClick?.(index, shape)}
             isSelected={selectedShapeIndex === index}
             isMobile={isMobile}
           />
-        </div>
-      ) : (
-        <div key={index} className="shape-preview empty" />
-      )
-    )
+        )}
+      </div>
+    ))
   ), [shapes, onDragStart, onTouchStart, onShapeClick, selectedShapeIndex, isMobile]);
 
   return (
-    <div className="next-shapes">
-      <div className="shape-previews">{renderedShapes}</div>
+    <div className="shape-previews" aria-label="Available shapes">
+      {renderedShapes}
     </div>
   );
 };
@@ -39,4 +42,3 @@ NextShapes.propTypes = {
 };
 
 export default memo(NextShapes);
-

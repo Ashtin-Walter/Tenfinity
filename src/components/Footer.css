@@ -1,0 +1,147 @@
+.footer {
+  margin-top: auto;
+  padding: 1rem;
+  text-align: center;
+  background: linear-gradient(135deg, 
+    rgba(0, 0, 0, 0.06) 0%, 
+    rgba(0, 0, 0, 0.03) 100%);
+  backdrop-filter: blur(10px);
+  border-radius: var(--card-radius);
+  box-shadow: 
+    0 -4px 15px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  transition: all var(--transition-speed) ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, 
+    transparent 0%,
+    rgba(var(--accent-color-rgb), 0.05) 25%,
+    rgba(var(--tertiary-color-rgb), 0.05) 75%,
+    transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.footer:hover::before {
+  opacity: 1;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.footer p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.footer a {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.footer a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--accent-color);
+  transition: width 0.3s ease;
+}
+
+.footer a:hover {
+  color: var(--tertiary-color);
+}
+
+.footer a:hover::after {
+  width: 100%;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 0.5rem;
+}
+
+.footer-icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: currentColor;
+  color: var(--primary-color);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.footer-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-links a::after {
+  display: none;
+}
+
+.footer-links a:hover .footer-icon {
+  opacity: 1;
+  transform: translateY(-2px);
+  color: var(--accent-color);
+}
+
+.dark-mode .footer {
+  background: linear-gradient(135deg, 
+    rgba(0, 0, 0, 0.2) 0%, 
+    rgba(0, 0, 0, 0.15) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .footer p {
+  color: var(--dark-text);
+}
+
+.dark-mode .footer-icon {
+  color: var(--dark-text);
+}
+
+@media (max-width: 600px) {
+  .footer {
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+  }
+  
+  .footer p {
+    font-size: 0.8rem;
+  }
+  
+  .footer-links {
+    gap: 1rem;
+  }
+  
+  .footer-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+}
