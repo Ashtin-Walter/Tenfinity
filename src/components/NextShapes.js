@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, memo } from 'react';
 import Shape from './Shape';
 import PropTypes from 'prop-types';
 
@@ -30,16 +30,13 @@ const NextShapes = ({ shapes, onDragStart, onTouchStart, isMobile, onShapeClick,
 };
 
 NextShapes.propTypes = {
-  shapes: PropTypes.arrayOf(PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.bool)),
-    PropTypes.oneOf([null])
-  ])).isRequired,
-  onDragStart: PropTypes.func.isRequired,
-  onTouchStart: PropTypes.func.isRequired,
-  isMobile: PropTypes.bool.isRequired,
+  shapes: PropTypes.array.isRequired,
+  onDragStart: PropTypes.func,
+  onTouchStart: PropTypes.func,
+  isMobile: PropTypes.bool,
   onShapeClick: PropTypes.func,
   selectedShapeIndex: PropTypes.number
 };
 
-export default React.memo(NextShapes);
+export default memo(NextShapes);
 

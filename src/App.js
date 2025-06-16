@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import GridBoard from './components/GridBoard';
 import NextShapes from './components/NextShapes';
 import GameOver from './components/GameOver';
 import ScoreBoard from './components/ScoreBoard';
 import SettingsMenu from './components/SettingsMenu';
+import Footer from './components/Footer'
 import { getBalancedShapes, rotateShape } from './utils/shapeGenerator';
 import './App.css';
 import Shape from './components/Shape';
@@ -145,18 +146,12 @@ const checkForCompletedLines = (grid, colorGrid, setScore, setGrid, setColorGrid
 const canPlaceShape = (grid, shape) => {
   if (!shape) return false;
   const pattern = shape.pattern || shape;
-  if (!Array.isArray(pattern) || !pattern.length || !pattern[0].length) return false;
+  const patH = pattern.length;
+  const patW = pattern[0].length;
 
-  for (let rot = 0; rot < 4; rot++) {
-    const rotated = rotateShape(shape, rot);
-    const pat = rotated.pattern || rotated;
-    const patH = pat.length;
-    const patW = pat[0].length;
-
-    for (let row = 0; row <= GRID_SIZE - patH; row++) {
-      for (let col = 0; col <= GRID_SIZE - patW; col++) {
-        if (canPlaceAt(grid, pat, row, col)) return true;
-      }
+  for (let row = 0; row <= GRID_SIZE - patH; row++) {
+    for (let col = 0; col <= GRID_SIZE - patW; col++) {
+      if (canPlaceAt(grid, pattern, row, col)) return true;
     }
   }
   return false;
@@ -234,6 +229,7 @@ const App = () => {
     setGameOver(false);
   }, []);
 
+  // Get next shapes based on current difficulty and existing shapes
   const getNextShapes = useCallback(() => {
     // Get a balanced set of shapes with the current difficulty
     return getBalancedShapes(3, difficulty, shapes); // shapes dependency might cause frequent re-creation if shapes array identity changes often
@@ -327,24 +323,24 @@ const App = () => {
     return true;
   }, [grid, colorGrid, shapes, score, setPrevGameState, setGrid, setColorGrid, setScore, setIsLineCleared, gridRef]); // Added gridRef to dependencies
 
-  // --- GAME OVER CHECK ---
-const checkGameOver = useCallback(() => {
-  if (gameOver) return false;
-  // If no shapes left or all are null/empty, game is over
-  if (!shapes || shapes.length === 0 || shapes.every(s => !s)) {
-    setGameOver(true);
-    return true;
-  }
-  // If none of the shapes can be placed, game is over
-  const anyCanPlace = shapes.some(s => s && canPlaceShape(grid, s));
-  if (!anyCanPlace) {
-    setGameOver(true);
-    return true;
-  }
-  return false;
-}, [gameOver, shapes, grid]);
+  // Memoized: check if any shape can be placed (for game over)
+  const anyMovePossible = useMemo(() => {
+    return shapes.some(shape => shape && canPlaceShape(grid, shape));
+  }, [shapes, grid]);
 
-  const handleDrop = useCallback((e) => {
+  // --- GAME OVER CHECK ---
+  const checkGameOver = useCallback(() => {
+    if (gameOver) return;
+    if (!shapes || shapes.length === 0 || shapes.every(shape => !shape)) {
+      setGameOver(true);
+      return;
+    }
+    if (!anyMovePossible) {
+      setGameOver(true);
+    }
+  }, [gameOver, shapes, anyMovePossible]);
+
+  const handleDrop = useCallback((e, row, col) => {
     if (e && typeof e.preventDefault === "function") {
       e.preventDefault();
     }
@@ -1009,12 +1005,8 @@ useEffect(() => {
           highScore={highScore}
         />
       )}
-      <footer className='footer'>
-        <p>
-          Created by{" "}
-          <a href="https://walterhouse.co.za" target="_blank" rel="noreferrer">Ashtin Walter</a>
-        </p>
-      </footer>
+      <Footer></Footer>
+      
     </div>
   );
 };

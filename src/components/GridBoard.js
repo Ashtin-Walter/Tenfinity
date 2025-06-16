@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useEffect } from "react";
+import React, { memo, useCallback, useMemo, useRef, useEffect } from "react";
 import GridCell from "./GridCell";
 import PropTypes from "prop-types";
 
@@ -274,30 +274,17 @@ const GridBoard = ({
 };
 
 GridBoard.propTypes = {
-  grid: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.bool)).isRequired,
-  onDrop: PropTypes.func.isRequired,
-  onDragOver: PropTypes.func.isRequired,
-  onDragLeave: PropTypes.func.isRequired,
-  previewShape: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.bool)),
-    PropTypes.shape({
-      pattern: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.bool)).isRequired,
-      color: PropTypes.string
-    })
-  ]),
-  previewPos: PropTypes.shape({
-    row: PropTypes.number,
-    col: PropTypes.number,
-    canPlace: PropTypes.bool,
-  }),
+  grid: PropTypes.array.isRequired,
+  onDrop: PropTypes.func,
+  onDragOver: PropTypes.func,
+  onDragLeave: PropTypes.func,
+  previewShape: PropTypes.object,
+  previewPos: PropTypes.object,
   isMobile: PropTypes.bool,
-  onTouchStart: PropTypes.func,
-  onTouchMove: PropTypes.func,
-  onTouchEnd: PropTypes.func,
   onCellClick: PropTypes.func,
   onMouseMove: PropTypes.func,
   selectedShape: PropTypes.bool,
-  cellColors: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string))
+  cellColors: PropTypes.array
 };
 
-export default React.memo(GridBoard);
+export default memo(GridBoard);
