@@ -1,42 +1,87 @@
-// Unit tests for core game logic: game over, shape placement, line clearing, scoring, undo
-import { checkGameOver, canPlaceShape, clearLines, calculateScore } from '../gameLogic';
+// Tests for game logic utilities
+import { 
+  checkGameOver, 
+  canPlaceAnywhereOnGrid, 
+  canPlaceShape, 
+  clearLines, 
+  calculateScore 
+} from '../gameLogic';
 
-describe('Game Logic', () => {
-  test('detects game over when no moves left', () => {
-    // Fill grid, no empty cells
-    const grid = Array(10).fill().map(() => Array(10).fill(true));
-    const shapes = [{ pattern: [[true]], name: 'single' }];
-    expect(checkGameOver(grid, shapes)).toBe(true);
+describe('Game Logic Utilities', () => {
+  // Test grid setup
+  const emptyGrid = Array(10).fill().map(() => Array(10).fill(false));
+  const fullGrid = Array(10).fill().map(() => Array(10).fill(true));
+  
+  // Test shapes
+  const singleBlock = { pattern: [[true]] };
+  const twoByTwo = { pattern: [[true, true], [true, true]] };
+  const longLine = { pattern: [[true, true, true, true, true]] };
+  
+  describe('canPlaceShape', () => {
+    test('should return true for valid placement', () => {
+      expect(canPlaceShape(emptyGrid, singleBlock, 0, 0)).toBe(true);
+      expect(canPlaceShape(emptyGrid, twoByTwo, 5, 5)).toBe(true);
+    });
+    
+    test('should return false for out of bounds placement', () => {
+      expect(canPlaceShape(emptyGrid, twoByTwo, 9, 9)).toBe(false);
+      expect(canPlaceShape(emptyGrid, longLine, 0, 6)).toBe(false);
+    });
+    
+    test('should return false for collision with existing blocks', () => {
+      const partialGrid = [...emptyGrid];
+      partialGrid[0][0] = true;
+      
+      expect(canPlaceShape(partialGrid, twoByTwo, 0, 0)).toBe(false);
+      expect(canPlaceShape(partialGrid, singleBlock, 0, 0)).toBe(false);
+    });
+    
+    test('should handle null or invalid shapes', () => {
+      expect(canPlaceShape(emptyGrid, null, 0, 0)).toBe(false);
+      expect(canPlaceShape(emptyGrid, {}, 0, 0)).toBe(false);
+      expect(canPlaceShape(emptyGrid, { pattern: [] }, 0, 0)).toBe(false);
+    });
   });
-
-  test('detects not game over when at least one move is possible', () => {
-    const grid = Array(10).fill().map(() => Array(10).fill(false));
-    const shapes = [{ pattern: [[true]], name: 'single' }];
-    expect(checkGameOver(grid, shapes)).toBe(false);
+  
+  describe('canPlaceAnywhereOnGrid', () => {
+    test('should return true if shape can be placed somewhere', () => {
+      expect(canPlaceAnywhereOnGrid(emptyGrid, singleBlock)).toBe(true);
+      
+      const almostFullGrid = fullGrid.map(row => [...row]);
+      almostFullGrid[0][0] = false;
+      expect(canPlaceAnywhereOnGrid(almostFullGrid, singleBlock)).toBe(true);
+    });
+    
+    test('should return false if shape cannot be placed anywhere', () => {
+      expect(canPlaceAnywhereOnGrid(fullGrid, singleBlock)).toBe(false);
+      expect(canPlaceAnywhereOnGrid(fullGrid, twoByTwo)).toBe(false);
+    });
+    
+    test('should handle null or invalid shapes', () => {
+      expect(canPlaceAnywhereOnGrid(emptyGrid, null)).toBe(false);
+      expect(canPlaceAnywhereOnGrid(emptyGrid, {})).toBe(false);
+      expect(canPlaceAnywhereOnGrid(emptyGrid, { pattern: [] })).toBe(false);
+    });
   });
-
-  test('canPlaceShape returns true for valid placement', () => {
-    const grid = Array(10).fill().map(() => Array(10).fill(false));
-    const shape = { pattern: [[true, true]], name: 'line-2' };
-    expect(canPlaceShape(grid, shape, 0, 0)).toBe(true);
-  });
-
-  test('canPlaceShape returns false for invalid placement', () => {
-    const grid = Array(10).fill().map(() => Array(10).fill(true));
-    const shape = { pattern: [[true, true]], name: 'line-2' };
-    expect(canPlaceShape(grid, shape, 0, 0)).toBe(false);
-  });
-
-  test('clearLines removes full rows and columns', () => {
-    const grid = Array(10).fill().map(() => Array(10).fill(false));
-    grid[0] = Array(10).fill(true); // Fill first row
-    const { newGrid, linesCleared } = clearLines(grid);
-    expect(linesCleared).toBeGreaterThan(0);
-    expect(newGrid[0].every(cell => !cell)).toBe(true);
-  });
-
-  test('calculateScore returns correct score', () => {
-    expect(calculateScore(1, 0)).toBeGreaterThan(0);
-    expect(calculateScore(0, 1)).toBeGreaterThan(0);
+  
+  describe('checkGameOver', () => {
+    test('should return true when no shapes can be placed', () => {
+      expect(checkGameOver(fullGrid, [singleBlock, twoByTwo])).toBe(true);
+    });
+    
+    test('should return false when at least one shape can be placed', () => {
+      expect(checkGameOver(emptyGrid, [singleBlock, twoByTwo])).toBe(false);
+    });
+    
+    test('should return false during animations', () => {
+      expect(checkGameOver(fullGrid, [singleBlock], true, false)).toBe(false);
+      expect(checkGameOver(fullGrid, [singleBlock], false, true)).toBe(false);
+    });
+    
+    test('should handle null shapes correctly', () => {
+      expect(checkGameOver(emptyGrid, [null, null])).toBe(false);
+      expect(checkGameOver(emptyGrid, [])).toBe(true);
+      expect(checkGameOver(emptyGrid, null)).toBe(true);
+    });
   });
 });

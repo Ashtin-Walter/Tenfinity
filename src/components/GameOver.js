@@ -1,11 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import './GameOver.css';
 
 const GameOver = ({ onRestart, finalScore, highScore }) => {
   const isNewHighScore = finalScore > highScore;
+  const [displayScore, setDisplayScore] = useState(0);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   // Calculate stats to display
   const percentOfHigh = highScore > 0 ? Math.round((finalScore / highScore) * 100) : 100;
+  
+  // Animate score counting up
+  useEffect(() => {
+    if (finalScore > 0) {
+      const duration = 1500; // ms
+      const interval = 20;
+      const steps = duration / interval;
+      const increment = finalScore / steps;
+      let current = 0;
+      
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= finalScore) {
+          setDisplayScore(finalScore);
+          clearInterval(timer);
+          if (isNewHighScore) {
+            setShowConfetti(true);
+          }
+        } else {
+          setDisplayScore(Math.floor(current));
+        }
+      }, interval);
+      
+      return () => clearInterval(timer);
+    }
+  }, [finalScore, isNewHighScore]);
   
   return (
     <div className="game-over-overlay"> 
@@ -23,7 +52,7 @@ const GameOver = ({ onRestart, finalScore, highScore }) => {
         <div className="score-details">
           <div className="final-score">
             <span className="score-label">Final Score:</span> 
-            <span className="score-value">{finalScore}</span>
+            <span className="score-value">{displayScore}</span>
           </div>
           
           <div className="high-score">
@@ -44,7 +73,7 @@ const GameOver = ({ onRestart, finalScore, highScore }) => {
           onClick={onRestart}
           autoFocus
         >
-          Play Again
+          <span>Play Again</span>
         </button>
         
         <div className="share-score">
@@ -60,6 +89,13 @@ const GameOver = ({ onRestart, finalScore, highScore }) => {
               }
             }}
           >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
             Share Score
           </button>
         </div>

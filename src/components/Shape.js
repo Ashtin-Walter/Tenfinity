@@ -4,30 +4,25 @@ import PropTypes from 'prop-types';
 const Shape = ({ shape, onDragStart, onTouchStart, isMobile, onShapeClick, isSelected }) => {
   const [isDragging, setIsDragging] = useState(false);
   
-  // Extract pattern and color from the shape
-  const { pattern, color } = useMemo(() => {
-    return {
-      pattern: shape.pattern || shape,
-      color: shape.color || 'var(--accent-color)'
-    };
-  }, [shape]);
+  const { pattern, color } = useMemo(() => ({
+    pattern: shape.pattern || shape,
+    color: shape.color || 'var(--accent-color)'
+  }), [shape]);
   
   const handleInteraction = useCallback((e) => {
     if (isMobile) {
-      onTouchStart(e);
+      onTouchStart?.(e);
     } else {
       setIsDragging(true);
       onDragStart(e);
     }
   }, [isMobile, onDragStart, onTouchStart]);
   
-  const handleDragEnd = useCallback(() => {
-    setIsDragging(false);
-  }, []);
+  const handleDragEnd = useCallback(() => setIsDragging(false), []);
 
   const handleClick = useCallback((e) => {
     if (onShapeClick) {
-      e.stopPropagation(); // Prevent click from propagating
+      e.stopPropagation();
       onShapeClick();
     }
   }, [onShapeClick]);
@@ -35,7 +30,7 @@ const Shape = ({ shape, onDragStart, onTouchStart, isMobile, onShapeClick, isSel
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      onShapeClick && onShapeClick();
+      onShapeClick?.();
     }
   }, [onShapeClick]);
 
