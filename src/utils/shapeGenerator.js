@@ -1,5 +1,5 @@
 // src/utils/shapeGenerator.js
-import { getHighContrastColor, getPaletteColorByIndex } from './colorUtils';
+import { getHighContrastColor } from './colorUtils';
 
 // Shape definitions with color mapping for better visual distinction
 export const SHAPES = {

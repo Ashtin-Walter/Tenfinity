@@ -5,7 +5,7 @@ import GameOver from './components/GameOver';
 import ScoreBoard from './components/ScoreBoard';
 import SettingsMenu from './components/SettingsMenu';
 import Footer from './components/Footer'
-import { getBalancedShapes, rotateShape } from './utils/shapeGenerator';
+import { getBalancedShapes } from './utils/shapeGenerator';
 import './App.css';
 import Shape from './components/Shape';
 // import ShapeGenerator from './components/ShapeGenerator';
