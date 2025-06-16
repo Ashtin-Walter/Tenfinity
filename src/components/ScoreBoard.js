@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, memo } from 'react';
 import PropTypes from 'prop-types';
 
 const ScoreBoard = ({ score, highScore }) => {
@@ -25,7 +25,7 @@ const ScoreBoard = ({ score, highScore }) => {
 
 ScoreBoard.propTypes = {
   score: PropTypes.number.isRequired,
-  highScore: PropTypes.number.isRequired,
+  highScore: PropTypes.number.isRequired
 };
 
-export default React.memo(ScoreBoard);
+export default memo(ScoreBoard);

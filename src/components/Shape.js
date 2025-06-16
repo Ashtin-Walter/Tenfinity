@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useMemo } from 'react';
+import React, { memo, useCallback, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 
 const Shape = ({ shape, onDragStart, onTouchStart, isMobile, onShapeClick, isSelected }) => {
@@ -88,4 +88,4 @@ Shape.propTypes = {
   isSelected: PropTypes.bool
 };
 
-export default React.memo(Shape);
+export default memo(Shape);

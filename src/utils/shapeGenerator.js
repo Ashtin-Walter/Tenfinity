@@ -1,4 +1,5 @@
 // src/utils/shapeGenerator.js
+import { getHighContrastColor, getPaletteColorByIndex } from './colorUtils';
 
 // Shape definitions with color mapping for better visual distinction
 export const SHAPES = {
@@ -38,8 +39,6 @@ export const SHAPES = {
     { pattern: [[true, true, true, true, true]], color: '#3F51B5', name: 'line-5' },
     { pattern: [[true, false, true], [true, true, true]], color: '#009688', name: 'U-shape' },
   ]
-  // Extreme difficulty level with all shapes
-  // No need to duplicate the shapes as we'll access them dynamically
 };
 
 // Precompute combined shapes and utility shuffle function
@@ -162,8 +161,13 @@ export const rotateShape = (shape, times = 1) => {
 export const getRandomShape = (difficulty = 'normal') =>
   getBalancedShapes(1, difficulty)[0];
 
-// Utility to generate random hex color per shape
-const generateRandomColor = () => `#${Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')}`;
+// Utility to determine theme (fallback to 'light')
+function getCurrentTheme() {
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  return 'light';
+}
 
 // Efficient balanced shapes using shuffle
 export const getBalancedShapes = (count, difficulty = 'normal', previousShapes = []) => {
@@ -173,11 +177,17 @@ export const getBalancedShapes = (count, difficulty = 'normal', previousShapes =
   const available = shapesForDifficulty.filter(s => !prevNames.includes(s.name));
   const pool = available.length >= count ? available : shapesForDifficulty;
 
+  const theme = getCurrentTheme();
+
   return shuffleArray(pool)
     .slice(0, count)
-    .map(shape => {
-      // Assign a unique random color for each generated shape
-      const s = { ...shape, color: generateRandomColor() };
+    .map((shape, idx) => {
+      // Assign a high-contrast color for each generated shape
+      // Option 1: Deterministic by shape index for consistency
+      // const color = getPaletteColorByIndex(idx, theme);
+      // Option 2: Random high-contrast color
+      const color = getHighContrastColor(theme);
+      const s = { ...shape, color };
       const rotations = Math.floor(Math.random() * 4);
       return rotateShape(s, rotations);
     });

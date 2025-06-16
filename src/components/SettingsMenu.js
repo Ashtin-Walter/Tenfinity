@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import ProfileSection from './ProfileSection';
 
 const SettingsMenu = ({ 
   isOpen, 
@@ -87,6 +88,7 @@ const SettingsMenu = ({
 
   // Settings sections configuration
   const sections = [
+    { id: 'profile', label: 'Profile', icon: '👤' },
     { id: 'game', label: 'Game', icon: '🎮' },
     { id: 'appearance', label: 'Appearance', icon: '🎨' },
     { id: 'save', label: 'Save/Load', icon: '💾' },
@@ -133,6 +135,16 @@ const SettingsMenu = ({
         </div>
         
         <div className="settings-content">
+          {/* Profile Section */}
+          <div 
+            className={`settings-panel ${activeSection === 'profile' ? 'active' : ''}`}
+            role="tabpanel"
+            aria-labelledby="profile-tab"
+          >
+            <ProfileSection user={null} onSignIn={() => {}} onSignOut={() => {}} />
+            {/* TODO: Wire up user, onSignIn, onSignOut with Firebase logic */}
+          </div>
+          
           {/* Game Settings */}
           <div 
             className={`settings-panel ${activeSection === 'game' ? 'active' : ''}`}
