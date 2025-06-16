@@ -5,7 +5,6 @@ import './GameOver.css';
 const GameOver = ({ onRestart, finalScore, highScore }) => {
   const isNewHighScore = finalScore > highScore;
   const [displayScore, setDisplayScore] = useState(0);
-  const [showConfetti, setShowConfetti] = useState(false);
 
   // Calculate stats to display
   const percentOfHigh = highScore > 0 ? Math.round((finalScore / highScore) * 100) : 100;
@@ -24,9 +23,7 @@ const GameOver = ({ onRestart, finalScore, highScore }) => {
         if (current >= finalScore) {
           setDisplayScore(finalScore);
           clearInterval(timer);
-          if (isNewHighScore) {
-            setShowConfetti(true);
-          }
+          // Score animation complete
         } else {
           setDisplayScore(Math.floor(current));
         }

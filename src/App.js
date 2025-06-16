@@ -145,28 +145,7 @@ const checkForCompletedLines = (grid, colorGrid, setScore, setGrid, setColorGrid
   }
 };
 
-// Enhanced placement check: optimized to quickly determine if a shape can be placed anywhere
-const canPlaceShape = (grid, shape) => {
-  if (!shape) return false;
-  
-  const pattern = shape.pattern || shape;
-  if (!pattern || !Array.isArray(pattern) || pattern.length === 0) return false;
-  
-  const patH = pattern.length;
-  const patW = pattern[0].length;
-  
-  // Early exit if shape is larger than grid
-  if (patH > GRID_SIZE || patW > GRID_SIZE) return false;
-  
-  // Check each possible position with early return for efficiency
-  for (let row = 0; row <= GRID_SIZE - patH; row++) {
-    for (let col = 0; col <= GRID_SIZE - patW; col++) {
-      if (canPlaceAt(grid, pattern, row, col)) return true;
-    }
-  }
-  
-  return false;
-};
+// This function is now used directly in the anyMovePossible useMemo
 
 function canPlaceAt(grid, pattern, startRow, startCol) {
   // Validate inputs
@@ -461,7 +440,7 @@ const App = () => {
     }
       setDraggingShape(null);
     setPreviewPos(null);
-  }, [previewPos, draggingShape, shapes, placeShapeOnGrid, getNextShapes, gridRef, checkGameOver]); // Added checkGameOver
+  }, [previewPos, draggingShape, shapes, placeShapeOnGrid, getNextShapes, gridRef]); // Removed unnecessary checkGameOver dependency
 
   // Click on a grid cell when a shape is selected
   const handleCellClick = useCallback((rowIndex, colIndex) => {
@@ -503,7 +482,7 @@ const App = () => {
     }    setSelectedShape(null);
     setDraggingShape(null);
     setPreviewPos(null);
-  }, [selectedShape, placeShapeOnGrid, shapes, getNextShapes, gridRef, checkGameOver]); // Added gridRef
+  }, [selectedShape, placeShapeOnGrid, shapes, getNextShapes, gridRef]); // Removed unnecessary checkGameOver dependency
 
   // Touch move handler - optimized for better performance and visual feedback
   const handleTouchMove = useCallback((e) => {

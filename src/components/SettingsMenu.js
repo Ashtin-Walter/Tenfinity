@@ -80,7 +80,7 @@ const SettingsMenu = ({
     // Auto-focus the first button when menu opens and ensure menu is visible
     if (isOpen && menuRef.current) {
       // Force a reflow to ensure CSS transitions work properly
-      const height = menuRef.current.offsetHeight; // Store the value to avoid ESLint no-unused-expressions error
+      void menuRef.current.offsetHeight; // Using void operator to avoid unused variable warning
       
       // Focus the active tab
       const activeTab = menuRef.current.querySelector(`#${activeSection}-tab`);
@@ -90,7 +90,7 @@ const SettingsMenu = ({
     }
     
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, activeSection]);
   
   // Close menu when clicking outside
   useEffect(() => {
