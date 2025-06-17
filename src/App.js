@@ -896,7 +896,7 @@ const App = () => {
         console.log('Running game over check with', shapes.filter(s => s !== null).length, 'valid shapes');
         checkGameOver();
       }
-    }, 200); // Increased timeout to ensure animations and state updates are complete
+    }, 600); // Increased timeout to ensure animations and state updates are complete
     
     return () => clearTimeout(gameOverCheckTimer);
   }, [
