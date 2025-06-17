@@ -1054,30 +1054,57 @@ body {
   }
 }
 
-/* iPhone 11 specific optimizations (max-width: 414px) */
-@media (max-width: 414px) {
+/* iPhone 11 specific optimizations (width: 414px) */
+@media screen and (min-width: 375px) and (max-width: 414px) {
   :root {
-    /* Make cell size fully responsive based on viewport width */
-    --cell-size-mobile: calc((100vw - 40px) / 10); /* 40px accounts for container padding and gaps */
+    /* Optimize cell size for iPhone 11 dimensions */
+    --cell-size-mobile: calc((100vw - 30px) / 10); /* Reduced padding allowance for more space */
+    --game-padding: 8px; /* Smaller padding for game container */
+    --grid-gap: 1px; /* Minimal gap between cells */
+  }
+
+  body {
+    overflow-y: hidden; /* Prevent vertical scrolling */
+  }
+
+  .App {
+    padding: 5px; /* Minimal padding */
+    margin: 5px auto; /* Reduced margin */
+    min-height: calc(100vh - 10px); /* Adjust for smaller margins */
+    gap: 0.5rem; /* Tighter spacing */
+  }
+
+  .app-header {
+    min-height: 50px; /* Smaller header */
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .game-container {
+    padding: 0; /* Remove padding */
+    gap: 6px; /* Tighter spacing between elements */
+    grid-template-rows: auto 1fr auto; /* Optimize row heights */
   }
 
   .grid-board-container {
     width: 100%; /* Take full container width */
     max-width: 100%; /* Ensure it doesn't overflow */
-    padding: 8px; /* Reduced padding */
-    margin: 0; /* Remove margins */
-    border-radius: 12px; /* Slightly reduced border radius */
+    padding: 5px; /* Minimal padding */
+    margin: 0 auto; /* Center horizontally */
+    border-radius: 10px; /* Smaller border radius */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Lighter shadow */
   }
 
   .grid-board {
     display: grid;
     grid-template-columns: repeat(10, var(--cell-size-mobile));
     grid-template-rows: repeat(10, var(--cell-size-mobile));
-    gap: 2px; /* Reduced gap */
-    padding: 2px; /* Reduced padding */
+    gap: var(--grid-gap); /* Use variable for consistency */
+    padding: 1px; /* Minimal padding */
     width: 100%; /* Ensure grid takes full width */
     height: 100%; /* Maintain aspect ratio */
     aspect-ratio: 1;
+    overflow: visible; /* Allow overflow to ensure nothing gets cut off */
   }
 
   .grid-cell {
@@ -1087,23 +1114,77 @@ body {
     border-width: 1px; /* Thinner borders */
   }
 
-  .game-container {
-    padding: 5px; /* Minimal padding */
-    gap: 8px; /* Reduced gap between elements */
-  }
-
-  .App {
-    padding: 5px; /* Minimal padding */
-  }
-
-  /* Adjust surrounding elements to give more space to grid */
+  /* Optimize shape previews for iPhone 11 */
   .shapes-container {
-    padding: 8px;
-    gap: 8px;
+    padding: 6px;
+    gap: 6px;
+    border-radius: 8px;
+    margin-bottom: 5px; /* Add space at bottom */
+  }
+
+  .shape-previews {
+    gap: 4px; /* Tighter spacing */
+  }
+
+  .shape-preview {
+    min-height: 45px; /* Smaller height */
+    padding: 0.25rem; /* Minimal padding */
+  }
+
+  .shape-cell {
+    width: calc(var(--shape-cell-size) * 0.9); /* Slightly smaller cells */
+    height: calc(var(--shape-cell-size) * 0.9);
+    margin: 0.5px; /* Smaller margins */
   }
 
   .mobile-score-display {
-    margin-bottom: 5px;
+    margin-bottom: 3px;
+    padding: 0.25rem 0;
+  }
+
+  .mobile-score-display .score-board {
+    padding: 0.3rem;
+    gap: 0.5rem;
+  }
+
+  /* Ensure buttons are easily tappable */
+  .gear-icon {
+    padding: 0.5rem; /* Larger tap target */
+  }
+}
+
+/* iPhone 11 landscape mode specific fixes */
+@media screen and (min-width: 667px) and (max-width: 896px) and (max-height: 414px) and (orientation: landscape) {
+  .App {
+    padding: 3px;
+    margin: 3px auto;
+  }
+
+  .app-header {
+    min-height: 40px;
+    padding: 0.3rem 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .game-container {
+    grid-template-columns: 140px 1fr; /* Slimmer sidebar */
+    grid-template-rows: 1fr;
+    gap: 0.5rem;
+    padding: 0.25rem;
+  }
+
+  .shapes-container {
+    max-width: 140px;
+    padding: 0.5rem;
+  }
+
+  .grid-board-container {
+    max-width: min(70vh, 400px); /* Optimize for landscape */
+    padding: 5px;
+  }
+
+  .header-score {
+    padding: 0.3rem 0.75rem;
   }
 }
 
