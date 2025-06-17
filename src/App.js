@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GridBoard from './components/GridBoard';
 import NextShapes from './components/NextShapes';
 import GameOver from './components/GameOver';
@@ -7,8 +7,6 @@ import SettingsMenu from './components/SettingsMenu';
 import Footer from './components/Footer'
 import { getBalancedShapes } from './utils/shapeGenerator';
 import './App.css';
-import './styles/mobile.css';
-import './styles/iphone11.css';
 import Shape from './components/Shape';
 // import ShapeGenerator from './components/ShapeGenerator';
 
@@ -162,13 +160,45 @@ function canPlaceAt(grid, pattern, startRow, startCol) {
   // Check for collisions with existing blocks
   for (let y = 0; y < pattern.length; y++) {
     for (let x = 0; x < pattern[0].length; x++) {
-      if (pattern[y][x] && grid[startRow + y][startCol + x]) {
-        return false;
+      // Only check cells that are part of the shape pattern
+      if (pattern[y][x]) {
+        const gridY = startRow + y;
+        const gridX = startCol + x;
+        
+        // Ensure we're within grid bounds
+        if (gridY < 0 || gridY >= grid.length || gridX < 0 || gridX >= grid[0].length) {
+          return false;
+        }
+        
+        // Check if the cell is already occupied
+        if (grid[gridY][gridX]) {
+          return false;
+        }
       }
     }
   }
   
+  // If we get here, the shape can be placed
   return true;
+}
+
+// Helper function to check if a shape has any filled cells
+function hasValidCells(shape) {
+  if (!shape) return false;
+  
+  const pattern = shape.pattern || shape;
+  if (!pattern || !Array.isArray(pattern) || pattern.length === 0) return false;
+  
+  // Check if the pattern has at least one filled cell
+  for (let y = 0; y < pattern.length; y++) {
+    for (let x = 0; x < pattern[0].length; x++) {
+      if (pattern[y][x]) {
+        return true; // Found at least one filled cell
+      }
+    }
+  }
+  
+  return false; // No filled cells found
 }
 
 // Helper function to check if shape can be placed at specific position
@@ -177,6 +207,9 @@ function canPlaceShapeAt(grid, shape, startRow, startCol) {
   
   const pattern = shape.pattern || shape;
   if (!pattern || !Array.isArray(pattern) || pattern.length === 0) return false;
+  
+  // Check if the shape has any filled cells
+  if (!hasValidCells(shape)) return false;
   
   const patH = pattern.length;
   const patW = pattern[0].length;
@@ -275,6 +308,13 @@ const App = () => {
       console.error('Attempted to place a null or undefined shape.');
       return false;
     }
+    
+    // Validate shape has at least one filled cell
+    if (!hasValidCells(shape)) {
+      console.error('Attempted to place a shape with no filled cells.');
+      return false;
+    }
+    
     // Save current state for undo before making changes
     setPrevGameState({ grid, colorGrid, shapes, score }); 
 
@@ -284,6 +324,11 @@ const App = () => {
     
     const pattern = shape.pattern || shape;
     const color = shape.color || 'var(--accent-color)';
+
+    // Pre-check if the shape can be placed at the given position
+    if (!canPlaceAt(grid, pattern, startY, startX)) {
+      return false;
+    }
 
     for (let y = 0; y < pattern.length; y++) {
       for (let x = 0; x < pattern[y].length; x++) {
@@ -336,10 +381,10 @@ const App = () => {
     return true;
   }, [grid, colorGrid, shapes, score, setPrevGameState, setGrid, setColorGrid, setScore, setIsLineCleared, gridRef]); // Added gridRef to dependencies
 
-  // Memoized: check if any shape can be placed (for game over)
-  const anyMovePossible = useMemo(() => {
+  // Function to check if any moves are possible (used directly in checkGameOver)
+  const checkAnyMovePossible = (currentShapes, currentGrid) => {
     // Filter out null shapes first
-    const validShapes = shapes.filter(shape => shape !== null);
+    const validShapes = currentShapes.filter(shape => shape !== null);
     if (validShapes.length === 0) return true; // No shapes to check yet, not game over
     
     // Check if any shape can be placed anywhere on the grid
@@ -357,19 +402,19 @@ const App = () => {
       // Check each possible position
       for (let row = 0; row <= GRID_SIZE - patH; row++) {
         for (let col = 0; col <= GRID_SIZE - patW; col++) {
-          if (canPlaceAt(grid, pattern, row, col)) return true;
+          if (canPlaceAt(currentGrid, pattern, row, col)) return true;
         }
       }
       return false;
     });
-  }, [shapes, grid]);
+  };
 
-  // --- GAME OVER CHECK ---
+  // --- IMPROVED GAME OVER CHECK ---
   const checkGameOver = useCallback(() => {
     // Skip if already in game over state
     if (gameOver) return;
     
-    // Skip during animations
+    // Skip during animations or shape refreshing
     if (isLineCleared || isRefreshingShapes) return;
     
     // Case 1: No shapes available (all used up)
@@ -386,12 +431,15 @@ const App = () => {
     const validShapes = shapes.filter(shape => shape !== null);
     if (validShapes.length === 0) return;
     
-    // If no moves are possible with any shape, game is over
-    if (!anyMovePossible) {
+    // Use our helper function to check if any moves are possible
+    const canPlaceAnyShape = checkAnyMovePossible(shapes, grid);
+    
+    // Only set game over if no shape can be placed anywhere
+    if (!canPlaceAnyShape) {
       console.log('Game over: No valid moves possible');
       setGameOver(true);
     }
-  }, [gameOver, shapes, anyMovePossible, isLineCleared, isRefreshingShapes]);
+  }, [gameOver, shapes, grid, isLineCleared, isRefreshingShapes]);
 
   const handleDrop = useCallback((e, row, col) => {
     if (e && typeof e.preventDefault === "function") {
@@ -832,7 +880,7 @@ const App = () => {
       // It is correctly reset by a setTimeout within the checkForCompletedLines function
       // after the animation duration.
     }
-  }, [isLineCleared]);  // Consolidated game over detection effect
+  }, [isLineCleared]);  // Improved game over detection effect
   useEffect(() => {
     // Skip check if game is already over
     if (gameOver) return;
@@ -840,13 +888,15 @@ const App = () => {
     // Skip check during animations or shape refreshing
     if (isLineCleared || isRefreshingShapes) return;
     
-    // Debounce the game over check to avoid multiple checks in rapid succession
+    // Use a longer debounce to ensure all state updates have completed
     const gameOverCheckTimer = setTimeout(() => {
       // Only check if we have valid shapes to work with
       if (shapes && Array.isArray(shapes) && shapes.length > 0 && shapes.some(s => s !== null)) {
+        // Add extra logging to help debug game over detection
+        console.log('Running game over check with', shapes.filter(s => s !== null).length, 'valid shapes');
         checkGameOver();
       }
-    }, 50);
+    }, 200); // Increased timeout to ensure animations and state updates are complete
     
     return () => clearTimeout(gameOverCheckTimer);
   }, [
